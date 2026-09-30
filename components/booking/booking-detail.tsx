@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarClock, CalendarPlus, Ban, UserCheck, UserX } from "lucide-react";
+import { CalendarClock, CalendarPlus, Ban, Phone, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
@@ -58,6 +59,18 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
           </Link>
         )}
       </div>
+
+      {/* No email on file: the app cannot message this customer (no SMS/WhatsApp in v1), so staff must phone them. */}
+      {staff && !b.customer.email && [...OPEN, "EN_ROUTE", "ARRIVED", "IN_PROGRESS"].includes(b.status) && (
+        <Alert className="border-amber-300 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-500/10">
+          <Phone />
+          <AlertTitle>Phone-only customer: call to keep them informed</AlertTitle>
+          <AlertDescription>
+            {b.customer.name} has no email, so they get no messages. Call {formatPhone(b.customer.phone)} about changes, and to remind them before the visit.
+            {b.visit?.extraCharge.status === "PROPOSED" && " Their approval of the extra charge is waiting: ask them and record the answer above."}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <ExtraChargeDecision booking={b} staff={staff} />
 

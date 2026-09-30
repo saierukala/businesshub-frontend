@@ -3,6 +3,7 @@ import { Wrench } from "lucide-react";
 import type { Role, User } from "@/lib/auth";
 import { LogoutButton } from "./logout-button";
 import { MainNav } from "./main-nav";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { VerifyEmailBanner } from "./verify-email-banner";
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -29,6 +30,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
               <div className="font-medium">{user.name}</div>
               <div className="text-muted-foreground">{ROLE_LABEL[user.role]}</div>
             </div>
+            <NotificationBell role={user.role} />
             <LogoutButton />
           </div>
         </div>
