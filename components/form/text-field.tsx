@@ -5,7 +5,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input";
 
 type Props<T extends FieldValues> = {
-  control: Control<T>;
+  control: Control<T, unknown, FieldValues>;
   name: Path<T>;
   label: string;
   description?: string;

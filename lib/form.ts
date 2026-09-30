@@ -3,7 +3,7 @@ import { ApiError } from "@/lib/api";
 
 // Shows an API error on the form: backend validation issues go under their fields,
 // anything else becomes the form-level message (rendered by <FormAlert>).
-export function showApiError<T extends FieldValues>(form: UseFormReturn<T>, err: unknown) {
+export function showApiError<T extends FieldValues>(form: Pick<UseFormReturn<T>, "getValues" | "setError">, err: unknown) {
   const fields = Object.keys(form.getValues());
   if (err instanceof ApiError) {
     const issues = err.fieldIssues.filter((i) => fields.includes(i.path));
