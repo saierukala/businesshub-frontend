@@ -8,6 +8,7 @@ export type BookingFilters = {
   page?: number;
   pageSize?: number;
   sort?: "newest" | "soonest"; // soonest = earliest visit first (the reassignment queue)
+  hideCancelled?: boolean; // leave out cancelled and no-show, so the total matches what is shown
   status?: string;
   customerId?: string;
   technicianId?: string;
@@ -24,8 +25,14 @@ export function useBookings(params: BookingFilters) {
   });
 }
 
+// While the work is in progress, poll every 10 s: the customer sees the technician's extra-charge request,
+// and the technician sees the answer, without reloading.
 export function useBooking(id: string) {
-  return useQuery({ queryKey: ["booking", id], queryFn: () => api<BookingDetail>(`/bookings/${id}`) });
+  return useQuery({
+    queryKey: ["booking", id],
+    queryFn: () => api<BookingDetail>(`/bookings/${id}`),
+    refetchInterval: (query) => (query.state.data?.status === "IN_PROGRESS" ? 10_000 : false),
+  });
 }
 
 // Slots are always asked from the backend; the UI never works out availability itself.
