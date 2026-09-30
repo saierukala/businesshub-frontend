@@ -77,3 +77,47 @@ export type Technician = {
 
 export type TimeOffReason = "SICK" | "LEAVE" | "OTHER";
 export type TimeOff = { id: string; startAt: string; endAt: string; reason: TimeOffReason; note: string | null };
+
+export type BookingStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "ASSIGNED"
+  | "EN_ROUTE"
+  | "ARRIVED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NO_SHOW";
+
+export type Booking = {
+  id: string;
+  bookingNumber: string;
+  status: BookingStatus;
+  source: "ONLINE" | "PHONE" | "WHATSAPP" | "WALK_IN";
+  startAt: string;
+  endAt: string;
+  problemDescription: string;
+  rescheduleCount: number;
+  needsReassignment: boolean;
+  createdByUserId: string;
+  createdAt: string;
+  customer: { id: string; name: string; phone: string | null; email: string | null };
+  service: { id: string; name: string; durationMinutes: number; basePrice: string };
+  appliance: { id: string; brand: string; model: string | null; category: Category };
+  address: { id: string; label: string; line1: string; area: string; city: string; pincode: string | null };
+  technician: { id: string; name: string } | null;
+};
+
+export type BookingDetail = Booking & {
+  history: {
+    fromStatus: BookingStatus | null;
+    toStatus: BookingStatus;
+    note: string | null;
+    createdAt: string;
+    changedBy?: { name: string; role: Role }; // staff only
+  }[];
+};
+
+// One bookable start time. Staff also get who is free.
+export type SlotOption = { startAt: string; endAt: string; technicians?: { id: string; name: string }[] };
+export type Availability = { date: string; timezone: string; durationMinutes: number; slots: SlotOption[] };

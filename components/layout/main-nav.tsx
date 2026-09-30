@@ -10,10 +10,13 @@ type NavItem = { href: string; label: string; roles: Role[] };
 // One list; each role sees only its items. (Hiding links is UX only: the pages and API check roles.)
 const NAV: NavItem[] = [
   { href: "/staff", label: "Dashboard", roles: ["OWNER", "MANAGER"] },
+  { href: "/staff/bookings", label: "Bookings", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/customers", label: "Customers", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/technicians", label: "Technicians", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/services", label: "Services", roles: ["OWNER"] },
   { href: "/staff/users", label: "Users", roles: ["OWNER"] },
+  { href: "/book", label: "Book a repair", roles: ["CUSTOMER"] },
+  { href: "/bookings", label: "My bookings", roles: ["CUSTOMER"] },
   { href: "/account", label: "My account", roles: ["CUSTOMER"] },
   { href: "/tech", label: "My jobs", roles: ["TECHNICIAN"] },
 ];
