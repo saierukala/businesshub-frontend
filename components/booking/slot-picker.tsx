@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "./date-picker";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
 import { useAvailability } from "@/lib/queries/bookings";
 import { addDays, formatTime, formatWeekdayDate, istDay } from "@/lib/format";
@@ -29,14 +29,12 @@ export function SlotPicker({ serviceId, area, date, slot, onChange, maxDaysAhead
     <div className="flex flex-col gap-4">
       <Field>
         <FieldLabel htmlFor="booking-date">Date</FieldLabel>
-        <Input
+        <DatePicker
           id="booking-date"
-          type="date"
-          className="w-full sm:w-56"
+          value={date}
           min={today}
           max={addDays(today, maxDaysAhead)}
-          value={date}
-          onChange={(e) => onChange(e.target.value, undefined)}
+          onChange={(day) => onChange(day, undefined)}
         />
         <FieldDescription>Times are India time (IST).</FieldDescription>
       </Field>
