@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { EllipsisVertical, History, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import {
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
 import { FormDialog } from "@/components/common/form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ApplianceHistory } from "./appliance-history";
 import { useCustomerRecords, useDeleteCustomerRecord } from "@/lib/queries/customer-records";
 import type { Address, Appliance } from "@/lib/types";
 
@@ -39,6 +40,8 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
   const remove = useDeleteCustomerRecord(kind, customerId);
   const [editing, setEditing] = useState<Item<K> | "new" | null>(null);
   const [deleting, setDeleting] = useState<Item<K> | null>(null);
+  const [historyOf, setHistoryOf] = useState<Item<K> | null>(null); // appliances only
+  const staff = customerId !== undefined;
 
   const addButton = (
     <Button variant="outline" size="sm" onClick={() => setEditing("new")}>
@@ -76,6 +79,11 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
                         <EllipsisVertical />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {kind === "appliances" && (
+                          <DropdownMenuItem onClick={() => setHistoryOf(item)}>
+                            <History /> Service history
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem onClick={() => setEditing(item)}>
                           <Pencil /> Edit
                         </DropdownMenuItem>
@@ -98,6 +106,15 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
         title={editing === "new" ? `Add ${noun}` : `Edit ${noun}`}
       >
         {editing !== null && renderForm(editing === "new" ? undefined : editing, () => setEditing(null))}
+      </FormDialog>
+
+      <FormDialog
+        open={historyOf !== null}
+        onOpenChange={(o) => !o && setHistoryOf(null)}
+        title="Service history"
+        description={historyOf ? describe(historyOf).title : undefined}
+      >
+        {historyOf && <ApplianceHistory applianceId={historyOf.id} staff={staff} />}
       </FormDialog>
 
       <ConfirmDialog

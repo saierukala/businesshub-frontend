@@ -108,7 +108,24 @@ export type Booking = {
   technician: { id: string; name: string } | null;
 };
 
+export type ExtraChargeStatus = "NONE" | "PROPOSED" | "APPROVED" | "DECLINED";
+
+// What happened at the visit. finalAmount = base price + the extra charge only if approved (computed by the API).
+export type Visit = {
+  startedAt: string | null;
+  completedAt: string | null;
+  diagnosis: string | null;
+  workPerformed: string | null;
+  partsNote: string | null;
+  notes: string | null;
+  result: string | null;
+  extraCharge: { status: ExtraChargeStatus; amount: string | null; reason: string | null; decidedAt: string | null };
+  finalAmount: string;
+};
+
 export type BookingDetail = Booking & {
+  visit: Visit | null;
+  followUpOf: { id: string; bookingNumber: string } | null;
   history: {
     fromStatus: BookingStatus | null;
     toStatus: BookingStatus;

@@ -1,8 +1,13 @@
 import { PageHeader } from "@/components/layout/page-header";
+import { TechJobs } from "@/components/tech/tech-jobs";
 
 export const metadata = { title: "My jobs" };
 
-// Placeholder landing page. Assigned jobs arrive in Phase 8.
 export default function TechPage() {
-  return <PageHeader title="My jobs" description="Your assigned jobs will appear here." />;
+  return (
+    <>
+      <PageHeader title="My jobs" description="Today's visits and what is coming up." />
+      <TechJobs />
+    </>
+  );
 }

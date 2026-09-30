@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, Ban, UserCheck, UserX } from "lucide-react";
+import Link from "next/link";
+import { CalendarClock, CalendarPlus, Ban, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +11,10 @@ import { ErrorState } from "@/components/common/query-states";
 import { StatusBadge } from "@/components/status-badge";
 import { AssignDialog } from "./assign-dialog";
 import { CancelDialog } from "./cancel-dialog";
+import { ExtraChargeDecision } from "./extra-charge-decision";
+import { FollowUpDialog } from "./follow-up-dialog";
 import { RescheduleDialog } from "./reschedule-dialog";
+import { VisitSummary } from "./visit-summary";
 import { useBooking, useMarkNoShow } from "@/lib/queries/bookings";
 import { formatDuration, formatINR, formatPhone, formatSlot, formatDate, formatTime } from "@/lib/format";
 import type { BookingDetail as Detail, BookingStatus } from "@/lib/types";
@@ -23,7 +27,7 @@ const NO_SHOW_FROM: BookingStatus[] = ["ASSIGNED", "EN_ROUTE", "ARRIVED"];
 export function BookingDetail({ id, staff = false }: { id: string; staff?: boolean }) {
   const query = useBooking(id);
   const noShow = useMarkNoShow(id);
-  const [dialog, setDialog] = useState<"reschedule" | "cancel" | "noshow" | "assign" | null>(null);
+  const [dialog, setDialog] = useState<"reschedule" | "cancel" | "noshow" | "assign" | "followup" | null>(null);
 
   if (query.isPending) return <Skeleton className="h-64 w-full" aria-busy="true" aria-label="Loading" />;
   if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
@@ -47,9 +51,16 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
         <h1 className="text-2xl font-semibold tracking-tight">{b.bookingNumber}</h1>
         <StatusBadge status={b.status} />
         {b.needsReassignment && <span className="text-sm font-medium text-destructive">Needs a new technician</span>}
+        {b.followUpOf && (
+          <Link href={`${staff ? "/staff/bookings" : "/bookings"}/${b.followUpOf.id}`} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
+            Follow-up to {b.followUpOf.bookingNumber}
+          </Link>
+        )}
       </div>
 
-      {(isOpen || (staff && NO_SHOW_FROM.includes(b.status))) && (
+      <ExtraChargeDecision booking={b} staff={staff} />
+
+      {(isOpen || (staff && (NO_SHOW_FROM.includes(b.status) || b.status === "IN_PROGRESS" || b.status === "COMPLETED"))) && (
         <div className="flex flex-wrap gap-2">
           {staff && (b.status === "CONFIRMED" || b.status === "ASSIGNED") && (
             <Button size="lg" variant={b.needsReassignment || b.status === "CONFIRMED" ? "default" : "outline"} onClick={() => setDialog("assign")}>
@@ -71,6 +82,11 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
               <UserX /> Mark no-show
             </Button>
           )}
+          {staff && (b.status === "IN_PROGRESS" || b.status === "COMPLETED") && (
+            <Button variant="outline" size="lg" onClick={() => setDialog("followup")}>
+              <CalendarPlus /> Book follow-up
+            </Button>
+          )}
         </div>
       )}
 
@@ -82,6 +98,8 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
           </div>
         ))}
       </dl>
+
+      {b.visit && <VisitSummary visit={b.visit} />}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">History</h2>
@@ -103,6 +121,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
 
       {/* key: a fresh dialog (empty fields, no old error) each time it opens */}
       <RescheduleDialog key={`r${dialog}`} booking={b} open={dialog === "reschedule"} onOpenChange={(o) => !o && setDialog(null)} />
+      {staff && <FollowUpDialog key={`f${dialog}`} booking={b} staff open={dialog === "followup"} onOpenChange={(o) => !o && setDialog(null)} />}
       {staff && <AssignDialog key={`a${dialog}`} booking={b} open={dialog === "assign"} onOpenChange={(o) => !o && setDialog(null)} />}
       <CancelDialog key={`c${dialog}`} booking={b} open={dialog === "cancel"} onOpenChange={(o) => !o && setDialog(null)} />
       <ConfirmDialog
