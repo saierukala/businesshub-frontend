@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wrench } from "lucide-react";
 import type { Role, User } from "@/lib/auth";
 import { LogoutButton } from "./logout-button";
+import { MainNav } from "./main-nav";
 import { VerifyEmailBanner } from "./verify-email-banner";
 
 const ROLE_LABEL: Record<Role, string> = {
@@ -30,6 +31,9 @@ export function AppShell({ user, children }: { user: User; children: React.React
             </div>
             <LogoutButton />
           </div>
+        </div>
+        <div className="mx-auto max-w-5xl px-4">
+          <MainNav role={user.role} />
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">

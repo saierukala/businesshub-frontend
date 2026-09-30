@@ -25,6 +25,16 @@ export class ApiError extends Error {
 
 type Options = { method?: string; body?: unknown };
 
+// { q: "ravi", page: 2, customerId: undefined } -> "?q=ravi&page=2" (skips empty values)
+export function qs(params: Record<string, string | number | boolean | undefined | null>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== "") sp.set(k, String(v));
+  }
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
 export async function api<T = unknown>(path: string, { method = "GET", body }: Options = {}): Promise<T> {
   let res: Response;
   try {
