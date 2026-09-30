@@ -11,6 +11,7 @@ type NavItem = { href: string; label: string; roles: Role[] };
 const NAV: NavItem[] = [
   { href: "/staff", label: "Dashboard", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/customers", label: "Customers", roles: ["OWNER", "MANAGER"] },
+  { href: "/staff/technicians", label: "Technicians", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/services", label: "Services", roles: ["OWNER"] },
   { href: "/staff/users", label: "Users", roles: ["OWNER"] },
   { href: "/account", label: "My account", roles: ["CUSTOMER"] },

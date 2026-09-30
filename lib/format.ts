@@ -27,3 +27,11 @@ const dateFmt = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day
 export function formatDate(iso: string): string {
   return dateFmt.format(new Date(iso));
 }
+
+// Time off is whole days, stored as [start of first day, start of the day after the last).
+// "5 Oct 2026" for one day, "5 Oct 2026 – 7 Oct 2026" for several (IST).
+export function formatDayRange(startIso: string, endIso: string): string {
+  const first = formatDate(startIso);
+  const last = formatDate(new Date(new Date(endIso).getTime() - 60_000).toISOString());
+  return first === last ? first : `${first} – ${last}`;
+}

@@ -60,3 +60,20 @@ export type StaffUser = {
 
 // Customer in a 409 DUPLICATE_PHONE error's details.
 export type PhoneMatch = { id: string; name: string; phone: string; email: string | null };
+
+export type WorkingDay = { dayOfWeek: number; startTime: string; endTime: string; isOff: boolean };
+
+export type Technician = {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  phone: string;
+  status: "ACTIVE" | "INACTIVE";
+  skills: Category[];
+  areas: string[];
+  workingHours: WorkingDay[];
+};
+
+export type TimeOffReason = "SICK" | "LEAVE" | "OTHER";
+export type TimeOff = { id: string; startAt: string; endAt: string; reason: TimeOffReason; note: string | null };
