@@ -27,7 +27,8 @@ export function useBooking(id: string) {
 }
 
 // Slots are always asked from the backend; the UI never works out availability itself.
-export function useAvailability(p: { serviceId?: string; date?: string; area?: string }) {
+// excludeBookingId: when rescheduling, so the booking's own slot does not block small shifts.
+export function useAvailability(p: { serviceId?: string; date?: string; area?: string; excludeBookingId?: string }) {
   return useQuery({
     queryKey: ["availability", p],
     queryFn: () => api<Availability>(`/availability${qs(p)}`),

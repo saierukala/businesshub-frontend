@@ -52,7 +52,17 @@ export function RescheduleDialog({ booking, open, onOpenChange }: Props) {
     >
       <div className="flex flex-col gap-4">
         <FormAlert message={error?.message} />
-        <SlotPicker serviceId={booking.service.id} area={booking.address.area} date={date} slot={slot} onChange={(d, s) => { setDate(d); setSlot(s); }} />
+        <SlotPicker
+          serviceId={booking.service.id}
+          area={booking.address.area}
+          date={date}
+          slot={slot}
+          onChange={(d, s) => {
+            setDate(d);
+            setSlot(s);
+          }}
+          reschedule={{ bookingId: booking.id, currentStartAt: booking.startAt }}
+        />
         {needsOverride && (
           <Field>
             <FieldLabel htmlFor="resched-override">Reason for the exception</FieldLabel>
