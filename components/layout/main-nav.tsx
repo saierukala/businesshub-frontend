@@ -4,13 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { useReassignmentCount } from "@/lib/queries/bookings";
 
-type NavItem = { href: string; label: string; roles: Role[] };
+type NavItem = { href: string; label: string; roles: Role[]; countBadge?: boolean };
+
+// Number of bookings waiting for a new technician. Only rendered for staff (their nav item asks for it).
+function ReassignmentCount() {
+  const count = useReassignmentCount();
+  if (count === 0) return null;
+  return (
+    <span className="ml-1.5 rounded-full bg-destructive px-1.5 py-0.5 text-xs font-medium text-white" aria-label={`${count} waiting`}>
+      {count}
+    </span>
+  );
+}
 
 // One list; each role sees only its items. (Hiding links is UX only: the pages and API check roles.)
 const NAV: NavItem[] = [
   { href: "/staff", label: "Dashboard", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/bookings", label: "Bookings", roles: ["OWNER", "MANAGER"] },
+  { href: "/staff/reassignments", label: "Needs reassignment", roles: ["OWNER", "MANAGER"], countBadge: true },
   { href: "/staff/customers", label: "Customers", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/technicians", label: "Technicians", roles: ["OWNER", "MANAGER"] },
   { href: "/staff/services", label: "Services", roles: ["OWNER"] },
@@ -44,6 +57,7 @@ export function MainNav({ role }: { role: Role }) {
           )}
         >
           {i.label}
+          {i.countBadge && <ReassignmentCount />}
         </Link>
       ))}
     </nav>

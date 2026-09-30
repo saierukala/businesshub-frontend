@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, Ban, UserX } from "lucide-react";
+import { CalendarClock, Ban, UserCheck, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ErrorState } from "@/components/common/query-states";
 import { StatusBadge } from "@/components/status-badge";
+import { AssignDialog } from "./assign-dialog";
 import { CancelDialog } from "./cancel-dialog";
 import { RescheduleDialog } from "./reschedule-dialog";
 import { useBooking, useMarkNoShow } from "@/lib/queries/bookings";
@@ -22,7 +23,7 @@ const NO_SHOW_FROM: BookingStatus[] = ["ASSIGNED", "EN_ROUTE", "ARRIVED"];
 export function BookingDetail({ id, staff = false }: { id: string; staff?: boolean }) {
   const query = useBooking(id);
   const noShow = useMarkNoShow(id);
-  const [dialog, setDialog] = useState<"reschedule" | "cancel" | "noshow" | null>(null);
+  const [dialog, setDialog] = useState<"reschedule" | "cancel" | "noshow" | "assign" | null>(null);
 
   if (query.isPending) return <Skeleton className="h-64 w-full" aria-busy="true" aria-label="Loading" />;
   if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
@@ -45,11 +46,16 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{b.bookingNumber}</h1>
         <StatusBadge status={b.status} />
-        {b.needsReassignment && <span className="text-sm text-destructive">Needs a new technician</span>}
+        {b.needsReassignment && <span className="text-sm font-medium text-destructive">Needs a new technician</span>}
       </div>
 
       {(isOpen || (staff && NO_SHOW_FROM.includes(b.status))) && (
         <div className="flex flex-wrap gap-2">
+          {staff && (b.status === "CONFIRMED" || b.status === "ASSIGNED") && (
+            <Button size="lg" variant={b.needsReassignment || b.status === "CONFIRMED" ? "default" : "outline"} onClick={() => setDialog("assign")}>
+              <UserCheck /> {b.status === "ASSIGNED" ? "Change technician" : "Assign technician"}
+            </Button>
+          )}
           {isOpen && (
             <>
               <Button variant="outline" size="lg" onClick={() => setDialog("reschedule")}>
@@ -97,6 +103,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
 
       {/* key: a fresh dialog (empty fields, no old error) each time it opens */}
       <RescheduleDialog key={`r${dialog}`} booking={b} open={dialog === "reschedule"} onOpenChange={(o) => !o && setDialog(null)} />
+      {staff && <AssignDialog key={`a${dialog}`} booking={b} open={dialog === "assign"} onOpenChange={(o) => !o && setDialog(null)} />}
       <CancelDialog key={`c${dialog}`} booking={b} open={dialog === "cancel"} onOpenChange={(o) => !o && setDialog(null)} />
       <ConfirmDialog
         open={dialog === "noshow"}

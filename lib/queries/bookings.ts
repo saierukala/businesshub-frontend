@@ -6,6 +6,8 @@ import type { Availability, Booking, BookingDetail, Page } from "@/lib/types";
 
 export type BookingFilters = {
   page?: number;
+  pageSize?: number;
+  sort?: "newest" | "soonest"; // soonest = earliest visit first (the reassignment queue)
   status?: string;
   customerId?: string;
   technicianId?: string;
@@ -85,6 +87,32 @@ export function useCancelBooking(id: string) {
     mutationFn: (body: { reason?: string; overrideReason?: string }) =>
       api<Booking>(`/bookings/${id}/cancel`, { method: "POST", body }),
     onSuccess: refresh,
+  });
+}
+
+// How many bookings are waiting for a new technician (shown next to the nav link).
+export function useReassignmentCount() {
+  const q = useBookings({ needsReassignment: true, pageSize: 1 });
+  return q.data?.total ?? 0;
+}
+
+// Free qualified technicians for a booking's time. Only asked for when the dialog is open.
+export function useAssignableTechnicians(bookingId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["assignable", bookingId],
+    queryFn: () => api<{ items: { id: string; name: string; isCurrent: boolean }[] }>(`/bookings/${bookingId}/technicians`),
+    enabled,
+    staleTime: 0,
+  });
+}
+
+export function useAssignTechnician(id: string) {
+  const refresh = useRefreshBookings();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { technicianId: string; note?: string }) => api<Booking>(`/bookings/${id}/assign`, { method: "POST", body }),
+    onSuccess: refresh,
+    onError: () => queryClient.invalidateQueries({ queryKey: ["assignable", id] }), // the list was stale: reload it
   });
 }
 
