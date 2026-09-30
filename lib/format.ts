@@ -35,3 +35,33 @@ export function formatDayRange(startIso: string, endIso: string): string {
   const last = formatDate(new Date(new Date(endIso).getTime() - 60_000).toISOString());
   return first === last ? first : `${first} – ${last}`;
 }
+
+const timeFmt = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", hour: "numeric", minute: "2-digit", hour12: true });
+const weekdayDateFmt = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", year: "numeric" });
+const isoDayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }); // en-CA prints YYYY-MM-DD
+
+// "10:30 am" in IST
+export function formatTime(iso: string): string {
+  return timeFmt.format(new Date(iso)).toLowerCase();
+}
+
+// "Mon, 5 Oct 2026" in IST
+export function formatWeekdayDate(iso: string): string {
+  return weekdayDateFmt.format(new Date(iso));
+}
+
+// "Mon, 5 Oct 2026, 10:30 am – 11:30 am"
+export function formatSlot(startIso: string, endIso: string): string {
+  return `${formatWeekdayDate(startIso)}, ${formatTime(startIso)} – ${formatTime(endIso)}`;
+}
+
+// The IST calendar day of an instant, as YYYY-MM-DD. Used for the date picker (never the browser's day).
+export function istDay(date: Date = new Date()): string {
+  return isoDayFmt.format(date);
+}
+
+// "2026-10-05" + 30 -> "2026-11-04"
+export function addDays(day: string, n: number): string {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
