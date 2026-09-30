@@ -44,7 +44,7 @@ export function useAddTimeOff(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: ReturnType<typeof toTimeOffBody>) =>
-      api<TimeOff>(`/technicians/${id}/time-off`, { method: "POST", body }),
+      api<TimeOff & { bookingsNeedingReassignment: number }>(`/technicians/${id}/time-off`, { method: "POST", body }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["time-off", id] }),
   });
 }

@@ -29,8 +29,13 @@ export function TimeOffForm({ technicianId, onDone }: { technicianId: string; on
 
   const onSubmit = form.handleSubmit((values) =>
     add.mutateAsync(toTimeOffBody(values)).then(
-      () => {
+      (row) => {
         toast.success("Time off added");
+        // The API keeps those bookings and flags them; the manager has to reassign or reschedule them.
+        if (row.bookingsNeedingReassignment > 0) {
+          const n = row.bookingsNeedingReassignment;
+          toast.warning(`${n} booking${n === 1 ? "" : "s"} in this period now need${n === 1 ? "s" : ""} reassignment`, { duration: 10000 });
+        }
         onDone();
       },
       (err) => showApiError(form, err),
