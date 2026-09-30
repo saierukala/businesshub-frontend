@@ -16,7 +16,7 @@ const ROLE_LABEL: Record<Role, string> = {
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
   return (
     <div className="flex flex-1 flex-col">
-      <header className="border-b bg-background">
+      <header className="border-b bg-background print:hidden">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">

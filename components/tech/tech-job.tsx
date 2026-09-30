@@ -3,18 +3,20 @@
 import { useState } from "react";
 import { CalendarPlus, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { ErrorState } from "@/components/common/query-states";
 import { StatusBadge } from "@/components/status-badge";
 import { FollowUpDialog } from "@/components/booking/follow-up-dialog";
 import { VisitSummary } from "@/components/booking/visit-summary";
+import { PaymentSection } from "@/components/payment/payment-section";
 import { ExtraChargeCard } from "./extra-charge-card";
 import { VisitForm } from "./visit-form";
 import { useBooking } from "@/lib/queries/bookings";
 import { useAdvanceBooking } from "@/lib/queries/visits";
 import { formatDuration, formatPhone, formatSlot } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { BookingDetail, BookingStatus } from "@/lib/types";
 
 // The big button for the next step. Completing is done from the visit form below.
@@ -73,19 +75,18 @@ export function TechJob({ id }: { id: string }) {
 
       <div className="grid gap-2 sm:grid-cols-2">
         {b.customer.phone && (
-          <Button variant="outline" size="lg" className="h-12 justify-start" nativeButton={false} render={<a href={`tel:+91${b.customer.phone}`} />}>
+          <a href={`tel:+91${b.customer.phone}`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-12 justify-start")}>
             <Phone /> Call {formatPhone(b.customer.phone)}
-          </Button>
+          </a>
         )}
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-auto min-h-12 justify-start py-2 text-left whitespace-normal"
-          nativeButton={false}
-          render={<a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`} target="_blank" rel="noopener noreferrer" />}
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(buttonVariants({ variant: "outline", size: "lg" }), "h-auto min-h-12 justify-start py-2 text-left whitespace-normal")}
         >
           <MapPin className="shrink-0" /> {address}
-        </Button>
+        </a>
       </div>
 
       <dl className="divide-y rounded-lg border">
@@ -108,6 +109,7 @@ export function TechJob({ id }: { id: string }) {
       )}
 
       {b.status === "COMPLETED" && b.visit && <VisitSummary visit={b.visit} />}
+      <PaymentSection booking={b} canRecord receiptHref={`/tech/jobs/${b.id}/receipt`} />
 
       {(b.status === "IN_PROGRESS" || b.status === "COMPLETED") && (
         <div>

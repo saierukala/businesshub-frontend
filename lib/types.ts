@@ -99,6 +99,7 @@ export type Booking = {
   problemDescription: string;
   rescheduleCount: number;
   needsReassignment: boolean;
+  paid: boolean;
   createdByUserId: string;
   createdAt: string;
   customer: { id: string; name: string; phone: string | null; email: string | null };
@@ -123,7 +124,34 @@ export type Visit = {
   finalAmount: string;
 };
 
+export type Payment = {
+  id: string;
+  amount: string;
+  method: "CASH" | "UPI" | "CARD" | "ONLINE";
+  status: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
+  reference: string | null;
+  receiptNumber: string | null;
+  paidAt: string | null;
+  recordedBy: string | null;
+};
+
+export type Receipt = {
+  receiptNumber: string;
+  paidAt: string;
+  business: string;
+  bookingNumber: string;
+  visitDate: string;
+  customer: { name: string; phone: string | null };
+  address: string;
+  technician: string | null;
+  lines: { label: string; amount: string }[];
+  total: string;
+  method: Payment["method"];
+  reference: string | null;
+};
+
 export type BookingDetail = Booking & {
+  payment: Payment | null;
   visit: Visit | null;
   followUpOf: { id: string; bookingNumber: string } | null;
   history: {

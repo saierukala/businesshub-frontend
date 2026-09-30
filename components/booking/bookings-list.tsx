@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
@@ -45,9 +45,9 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
           </Select>
         )}
         <div className="sm:ml-auto">
-          <Button nativeButton={false} render={<Link href={staff ? "/staff/bookings/new" : "/book"} />}>
+          <Link href={staff ? "/staff/bookings/new" : "/book"} className={buttonVariants()}>
             <CalendarPlus /> {staff ? "New booking" : "Book a repair"}
-          </Button>
+          </Link>
         </div>
       </div>
 
@@ -102,6 +102,11 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
                       <div className="flex flex-col items-start gap-1">
                         <StatusBadge status={b.status as BookingStatus} />
                         {staff && b.needsReassignment && <span className="text-xs font-medium text-destructive">Needs new technician</span>}
+                        {b.status === "COMPLETED" && (
+                          <span className={b.paid ? "text-xs font-medium text-green-700 dark:text-green-400" : "text-xs font-medium text-destructive"}>
+                            {b.paid ? "Paid" : "Payment due"}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
