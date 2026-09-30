@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { CircleAlert, CircleCheck } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useVerifyEmail } from "@/lib/queries/auth";
 
@@ -40,9 +40,9 @@ export function VerifyEmail({ token }: { token: string }) {
           <AlertTitle>Email verified</AlertTitle>
           <AlertDescription>Thanks! Your email address is confirmed.</AlertDescription>
         </Alert>
-        <Button render={<Link href="/" />} nativeButton={false}>
+        <Link href="/" className={buttonVariants()}>
           Continue
-        </Button>
+        </Link>
       </div>
     );
   }

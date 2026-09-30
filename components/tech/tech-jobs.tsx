@@ -19,7 +19,14 @@ function JobCard({ job }: { job: Booking }) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-lg font-semibold">{formatTime(job.startAt)}</span>
-          <StatusBadge status={job.status} />
+          <div className="flex items-center gap-1.5">
+            {job.status === "COMPLETED" && (
+              <span className={job.paid ? "text-xs font-medium text-green-700 dark:text-green-400" : "text-xs font-medium text-destructive"}>
+                {job.paid ? "Paid" : "Payment due"}
+              </span>
+            )}
+            <StatusBadge status={job.status} />
+          </div>
         </div>
         <div className="mt-1 font-medium">
           {job.service.name} · {job.customer.name}
