@@ -18,6 +18,13 @@ One wizard, two paths. `components/booking/booking-wizard.tsx` is used by both; 
 - Detail also shows customer and source, history with who made each change, and **Mark no-show**
   (from technician assigned / on the way / arrived).
 
+## Assignment and reassignment (Phase 7, staff)
+- Staff booking detail: **Assign technician** (confirmed) / **Change technician** (assigned). The dialog lists only the
+  technicians the API says are qualified and free at that time; if nobody is free it suggests rescheduling.
+- **Needs reassignment** (`/staff/reassignments`, nav link with a live count): bookings flagged when a technician takes time off,
+  earliest visit first. Assigning another technician clears the flag and the count. Rows in the normal bookings list show
+  the technician and a red "Needs new technician" note.
+
 ## Files
 - `lib/queries/bookings.ts` hooks, `components/status-badge.tsx` the one status colour map,
   `components/booking/*` wizard steps, slot picker, cancel and reschedule dialogs.
