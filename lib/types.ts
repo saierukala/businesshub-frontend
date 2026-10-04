@@ -150,8 +150,11 @@ export type Receipt = {
   reference: string | null;
 };
 
+export type Review = { id: string; rating: number; comment: string | null; createdAt: string };
+
 export type BookingDetail = Booking & {
   payment: Payment | null;
+  review: Review | null; // the customer's rating of a completed repair
   visit: Visit | null;
   followUpOf: { id: string; bookingNumber: string } | null;
   history: {

@@ -1,8 +1,13 @@
 import { PageHeader } from "@/components/layout/page-header";
+import { ManagerDashboardView } from "@/components/dashboard/manager-dashboard";
 
 export const metadata = { title: "Staff dashboard" };
 
-// Placeholder landing page. Customers, technicians and bookings arrive in later phases.
 export default function StaffPage() {
-  return <PageHeader title="Dashboard" description="Today's bookings and technicians will appear here." />;
+  return (
+    <>
+      <PageHeader title="Dashboard" description="Today's bookings, who is free, and what needs attention." />
+      <ManagerDashboardView />
+    </>
+  );
 }

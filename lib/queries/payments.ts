@@ -10,6 +10,8 @@ export function useRecordPayment(bookingId: string) {
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["booking"] });
     queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    queryClient.invalidateQueries({ queryKey: ["report"] });
     queryClient.invalidateQueries({ queryKey: ["receipt"] });
   };
   return useMutation({

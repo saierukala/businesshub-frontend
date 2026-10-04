@@ -6,7 +6,7 @@ describe("homeFor", () => {
     expect(homeFor("OWNER")).toBe("/staff");
     expect(homeFor("MANAGER")).toBe("/staff");
     expect(homeFor("TECHNICIAN")).toBe("/tech");
-    expect(homeFor("CUSTOMER")).toBe("/account");
+    expect(homeFor("CUSTOMER")).toBe("/home");
   });
 });
 

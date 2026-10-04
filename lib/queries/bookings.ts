@@ -64,6 +64,8 @@ function useRefreshBookings() {
   const queryClient = useQueryClient();
   return () => {
     queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    queryClient.invalidateQueries({ queryKey: ["report"] });
     queryClient.invalidateQueries({ queryKey: ["booking"] });
     queryClient.invalidateQueries({ queryKey: ["availability"] });
   };

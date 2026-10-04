@@ -9,7 +9,7 @@ Spec lives in the backend repo: `../BusinessHub-backend/docs/spec/`. Start from 
 Do NOT open `../BusinessHub-backend/docs/BusinessHub-Spec.md`. Do not read backend `src/` unless an API shape is unclear; prefer its route schemas (`src/routes/*.schemas.ts`) or API docs.
 
 ## Current phase
-Phase: 11 (Dashboards and reports)   <!-- keep in sync with backend CLAUDE.md -->
+Phase: 13 (Release)   <!-- keep in sync with backend CLAUDE.md -->
 Frontend pages for a phase are built only after that phase's API is finished.
 
 ## Stack (fixed, ask before changing)

@@ -15,7 +15,7 @@ export type User = {
 export function homeFor(role: Role): string {
   if (role === "OWNER" || role === "MANAGER") return "/staff";
   if (role === "TECHNICIAN") return "/tech";
-  return "/account";
+  return "/home";
 }
 
 // Only allow same-site paths for ?next=, so a crafted link like

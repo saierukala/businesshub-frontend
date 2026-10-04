@@ -69,6 +69,6 @@ describe("LoginForm", () => {
     mockFetch(200, { user: { id: "1", role: "CUSTOMER" } });
     renderForm("https://evil.example");
     await fillAndSubmit("ravi@example.test", "password123");
-    await vi.waitFor(() => expect(router.replace).toHaveBeenCalledWith("/account"));
+    await vi.waitFor(() => expect(router.replace).toHaveBeenCalledWith("/home"));
   });
 });

@@ -6,6 +6,7 @@ import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-
 import { PaginationBar } from "@/components/common/pagination-bar";
 import { StatusBadge } from "@/components/status-badge";
 import { useBookings } from "@/lib/queries/bookings";
+import { useTechnicianDashboard } from "@/lib/queries/dashboard";
 import { useListParams } from "@/hooks/use-list-params";
 import { addDays, formatTime, formatWeekdayDate, istDay } from "@/lib/format";
 import type { Booking } from "@/lib/types";
@@ -55,6 +56,21 @@ function Group({ title, jobs }: { title: string; jobs: Booking[] }) {
   );
 }
 
+// "2 of 5 done today" from the dashboard API, which counts the day in IST on the server.
+function TodayProgress() {
+  const { data } = useTechnicianDashboard();
+  if (!data || data.counts.total === 0) return null;
+  const { done, remaining, total } = data.counts;
+  return (
+    <p className="rounded-lg border bg-muted/40 px-4 py-3 text-sm" aria-live="polite">
+      <span className="font-semibold">
+        {done} of {total}
+      </span>{" "}
+      done today{remaining > 0 ? `, ${remaining} to go.` : ". All finished."}
+    </p>
+  );
+}
+
 // The technician's home: today's jobs first, then what is coming up. Only their own assigned bookings.
 export function TechJobs() {
   const { page, set } = useListParams();
@@ -77,6 +93,7 @@ export function TechJobs() {
 
   return (
     <div className="flex flex-col gap-6">
+      <TodayProgress />
       <Group title="Not finished" jobs={earlierUnfinished} />
       <Group title={`Today, ${formatWeekdayDate(new Date().toISOString())}`} jobs={todays} />
       {todays.length === 0 && <p className="text-sm text-muted-foreground">Nothing scheduled for today.</p>}

@@ -9,6 +9,7 @@ function useRefresh() {
   const queryClient = useQueryClient();
   return () => {
     queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     queryClient.invalidateQueries({ queryKey: ["booking"] });
     queryClient.invalidateQueries({ queryKey: ["availability"] });
     queryClient.invalidateQueries({ queryKey: ["appliance-history"] });

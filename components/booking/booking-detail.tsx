@@ -17,6 +17,7 @@ import { FollowUpDialog } from "./follow-up-dialog";
 import { RescheduleDialog } from "./reschedule-dialog";
 import { VisitSummary } from "./visit-summary";
 import { PaymentSection } from "@/components/payment/payment-section";
+import { ReviewSection } from "@/components/reviews/review-section";
 import { useBooking, useMarkNoShow } from "@/lib/queries/bookings";
 import { formatDuration, formatINR, formatPhone, formatSlot, formatDate, formatTime } from "@/lib/format";
 import type { BookingDetail as Detail, BookingStatus } from "@/lib/types";
@@ -115,6 +116,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
 
       {b.visit && <VisitSummary visit={b.visit} />}
       <PaymentSection booking={b} canRecord={staff} receiptHref={`${staff ? "/staff/bookings" : "/bookings"}/${b.id}/receipt`} />
+      <ReviewSection booking={b} canReview={!staff} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">History</h2>
