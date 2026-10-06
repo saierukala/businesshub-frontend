@@ -19,7 +19,11 @@ export function MissingToken({ hint }: { hint: React.ReactNode }) {
 }
 
 // Reads ?token= from Next's searchParams (can be a string, an array, or missing).
+// Tokens only use A-Z a-z 0-9 - _ (base64url). A link copied from a terminal or a wrapped email can pick up
+// line breaks inside it or text after it (e.g. "\n\nIn"), so drop whitespace and keep only the token part.
+// The server still checks the token exactly; this only forgives copy mistakes.
 export function tokenFrom(params: Record<string, string | string[] | undefined>): string | null {
   const t = params.token;
-  return typeof t === "string" && t.length > 0 ? t : null;
+  if (typeof t !== "string") return null;
+  return t.replace(/\s+/g, "").match(/^[A-Za-z0-9_-]+/)?.[0] ?? null;
 }
