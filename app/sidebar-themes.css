@@ -1,0 +1,80 @@
+/* Sidebar palettes, picked on the Settings page ("Sidebar color"). The choice is set as
+   <html data-sidebar-theme="...">. "khaki" is the default and lives in globals.css (:root and .dark).
+   These come after globals.css, so they win over the .dark sidebar colors too. */
+
+[data-sidebar-theme="teal"] {
+  --sidebar: #284e55;
+  --sidebar-foreground: #f2f3f3;
+  --sidebar-primary: #a95641;
+  --sidebar-primary-foreground: #f2f3f3;
+  --sidebar-accent: rgb(242 243 243 / 0.13);
+  --sidebar-accent-foreground: #f2f3f3;
+  --sidebar-border: rgb(242 243 243 / 0.14);
+  --sidebar-ring: #4bb4e0;
+}
+
+[data-sidebar-theme="snow"] {
+  --sidebar: #fbfcfc;
+  --sidebar-foreground: #292c41;
+  --sidebar-primary: #8d746c;
+  --sidebar-primary-foreground: #fbfcfc;
+  --sidebar-accent: rgb(76 161 228 / 0.16);
+  --sidebar-accent-foreground: #292c41;
+  --sidebar-border: rgb(41 44 65 / 0.1);
+  --sidebar-ring: #4ca1e4;
+}
+
+[data-sidebar-theme="slate"] {
+  --sidebar: #2e3f47;
+  --sidebar-foreground: #f4f1f1;
+  --sidebar-primary: #716452;
+  --sidebar-primary-foreground: #f4f1f1;
+  --sidebar-accent: rgb(163 199 225 / 0.16);
+  --sidebar-accent-foreground: #f4f1f1;
+  --sidebar-border: rgb(244 241 241 / 0.12);
+  --sidebar-ring: #a3c7e1;
+}
+
+[data-sidebar-theme="midnight"] {
+  --sidebar: #292c41;
+  --sidebar-foreground: #fefefe;
+  --sidebar-primary: #ef6b41;
+  --sidebar-primary-foreground: #fefefe;
+  --sidebar-accent: rgb(238 222 222 / 0.14);
+  --sidebar-accent-foreground: #fefefe;
+  --sidebar-border: rgb(238 222 222 / 0.14);
+  --sidebar-ring: #96c08e;
+}
+
+[data-sidebar-theme="dusk"] {
+  --sidebar: #373f55;
+  --sidebar-foreground: #f7f8f7;
+  --sidebar-primary: #9d6759;
+  --sidebar-primary-foreground: #f7f8f7;
+  --sidebar-accent: rgb(162 186 212 / 0.18);
+  --sidebar-accent-foreground: #f7f8f7;
+  --sidebar-border: rgb(247 248 247 / 0.12);
+  --sidebar-ring: #a2bad4;
+}
+
+[data-sidebar-theme="navy"] {
+  --sidebar: #232f57;
+  --sidebar-foreground: #f1f4f2;
+  --sidebar-primary: #ee8888;
+  --sidebar-primary-foreground: #0f0f0f;
+  --sidebar-accent: rgb(111 133 181 / 0.35);
+  --sidebar-accent-foreground: #f1f4f2;
+  --sidebar-border: rgb(136 158 175 / 0.2);
+  --sidebar-ring: #889eaf;
+}
+
+[data-sidebar-theme="mist"] {
+  --sidebar: #f9f9f9;
+  --sidebar-foreground: #28282a;
+  --sidebar-primary: #bdbd61;
+  --sidebar-primary-foreground: #28282a;
+  --sidebar-accent: rgb(160 156 171 / 0.22);
+  --sidebar-accent-foreground: #28282a;
+  --sidebar-border: rgb(60 58 69 / 0.1);
+  --sidebar-ring: #a09cab;
+}
