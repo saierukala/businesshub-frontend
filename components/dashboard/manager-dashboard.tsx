@@ -97,6 +97,12 @@ function Content({ d }: { d: ManagerDashboard }) {
         >
           <BookingRows items={d.needsReassignment.items} base="/staff/bookings" showCustomer empty="Nothing needs a new technician." />
         </Panel>
+        <Panel
+          title={`Past visits still open (${d.pastOpen.total})`}
+          action={d.pastOpen.total > 0 && <Link href="/staff/bookings?status=PAST_OPEN" className="text-sm text-primary hover:underline">See all</Link>}
+        >
+          <BookingRows items={d.pastOpen.items} base="/staff/bookings" showCustomer empty="Every past visit is closed." />
+        </Panel>
         <Panel title="Bookings made, last 14 days">
           <Trend days={d.bookingTrend} />
         </Panel>

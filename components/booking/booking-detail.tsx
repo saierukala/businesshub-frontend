@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ErrorState } from "@/components/common/query-states";
 import { StatusBadge } from "@/components/status-badge";
 import { AssignDialog } from "./assign-dialog";
+import { PastOpenAlert } from "./past-open-alert";
 import { CancelDialog } from "./cancel-dialog";
 import { ExtraChargeDecision } from "./extra-charge-decision";
 import { FollowUpDialog } from "./follow-up-dialog";
@@ -24,13 +25,14 @@ import type { BookingDetail as Detail, BookingStatus } from "@/lib/types";
 
 // Statuses where the visit can still be moved or cancelled. (The API enforces this and the time windows.)
 const OPEN: BookingStatus[] = ["PENDING", "CONFIRMED", "ASSIGNED"];
-// Staff can mark no-show once a technician is on the job.
+// Staff can mark no-show once a technician is on the job AND the visit time has started (the API checks both).
 const NO_SHOW_FROM: BookingStatus[] = ["ASSIGNED", "EN_ROUTE", "ARRIVED"];
 
 export function BookingDetail({ id, staff = false }: { id: string; staff?: boolean }) {
   const query = useBooking(id);
   const noShow = useMarkNoShow(id);
   const [dialog, setDialog] = useState<"reschedule" | "cancel" | "noshow" | "assign" | "followup" | null>(null);
+  const [openedAt] = useState(() => Date.now());
 
   if (query.isPending) return <Skeleton className="h-64 w-full" aria-busy="true" aria-label="Loading" />;
   if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
@@ -73,6 +75,8 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
         </Alert>
       )}
 
+      {staff && <PastOpenAlert booking={b} />}
+
       <ExtraChargeDecision booking={b} staff={staff} />
 
       {(isOpen || (staff && (NO_SHOW_FROM.includes(b.status) || b.status === "IN_PROGRESS" || b.status === "COMPLETED"))) && (
@@ -92,7 +96,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
               </Button>
             </>
           )}
-          {staff && NO_SHOW_FROM.includes(b.status) && (
+          {staff && NO_SHOW_FROM.includes(b.status) && new Date(b.startAt).getTime() <= openedAt && (
             <Button variant="outline" size="lg" onClick={() => setDialog("noshow")}>
               <UserX /> Mark no-show
             </Button>

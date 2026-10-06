@@ -13,6 +13,7 @@ export type BookingFilters = {
   customerId?: string;
   technicianId?: string;
   needsReassignment?: boolean;
+  pastOpen?: boolean; // staff: visit time over but still open
   from?: string;
   to?: string;
 };

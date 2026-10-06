@@ -22,6 +22,9 @@ export function AssignDialog({ booking, open, onOpenChange }: Props) {
   const [choice, setChoice] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const reassigning = booking.status === "ASSIGNED";
+  // Technicians are only offered for times still ahead: a visit whose time has passed lists nobody.
+  const [openedAt] = useState(() => Date.now());
+  const timePassed = new Date(booking.startAt).getTime() <= openedAt;
 
   function submit() {
     if (!choice) return;
@@ -57,7 +60,19 @@ export function AssignDialog({ booking, open, onOpenChange }: Props) {
         ) : options.isError ? (
           <ErrorState error={options.error} onRetry={() => options.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState title="Nobody is free at this time" description="No qualified technician is available. Reschedule with the customer instead." />
+          timePassed ? (
+            <EmptyState
+              title="This visit time has passed"
+              description={`Technicians can only be assigned to upcoming times. Reschedule the booking to a new time first, or ${
+                reassigning ? "mark it as a no-show" : "cancel it with a reason"
+              } if the visit is not happening.`}
+            />
+          ) : (
+            <EmptyState
+              title="Nobody is free at this time"
+              description="No technician has this skill and area, works at this time, and is free (no time off or other booking). Reschedule with the customer instead."
+            />
+          )
         ) : (
           <ChoiceList
             label="Technician"

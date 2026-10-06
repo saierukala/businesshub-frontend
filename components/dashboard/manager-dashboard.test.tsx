@@ -7,6 +7,7 @@ const data = {
   todayByStatus: { COMPLETED: 2, ASSIGNED: 1 },
   pendingAssignments: { total: 0, items: [] },
   needsReassignment: { total: 0, items: [] },
+  pastOpen: { total: 0, items: [] },
   availableTechnicians: [{ id: "t1", name: "Ravi Kumar" }],
   revenue: { today: "1198.00", thisMonth: "15500.00" },
   popularServices: [{ serviceId: "s1", name: "AC Repair", bookings: 7 }],

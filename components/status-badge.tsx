@@ -15,6 +15,7 @@ const STATUS: Record<BookingStatus, { label: string; className: string }> = {
   NO_SHOW: { label: "No-show", className: "bg-red-100 text-red-900 dark:bg-red-500/20 dark:text-red-200" },
 };
 
+export const statusLabel = (s: BookingStatus) => STATUS[s].label;
 export const STATUS_OPTIONS = (Object.keys(STATUS) as BookingStatus[]).map((s) => ({ value: s, label: STATUS[s].label }));
 
 export function StatusBadge({ status }: { status: BookingStatus }) {

@@ -14,15 +14,20 @@ import { formatTime, formatWeekdayDate } from "@/lib/format";
 import type { BookingStatus } from "@/lib/types";
 
 const FILTERS = [{ value: "all", label: "All statuses" }, ...STATUS_OPTIONS];
+// Staff also get "past, still open": the visit time is over but nobody closed the booking.
+const PAST_OPEN = "PAST_OPEN";
+const STAFF_FILTERS = [...FILTERS, { value: PAST_OPEN, label: "Past, still open" }];
 
 // customer = the logged-in customer's own bookings. staff = everyone's (adds customer and technician columns).
 // queue = staff "Needs reassignment" queue: only flagged bookings, earliest visit first.
 export function BookingsList({ staff = false, queue = false }: { staff?: boolean; queue?: boolean }) {
   const { get, page, set } = useListParams();
   const status = get("status");
+  const pastOpen = staff && status === PAST_OPEN;
+  const filters = staff ? STAFF_FILTERS : FILTERS;
   const bookings = useBookings({
     page,
-    status: status || undefined,
+    ...(pastOpen ? { pastOpen: true, sort: "soonest" as const } : { status: status || undefined }),
     ...(queue && { needsReassignment: true, sort: "soonest" as const }),
   });
   const base = staff ? "/staff/bookings" : "/bookings";
@@ -31,12 +36,12 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {!queue && (
-          <Select items={FILTERS} value={status || "all"} onValueChange={(v) => set({ status: v === "all" ? undefined : (v ?? undefined) })}>
+          <Select items={filters} value={status || "all"} onValueChange={(v) => set({ status: v === "all" ? undefined : (v ?? undefined) })}>
             <SelectTrigger className="sm:w-48" aria-label="Filter by status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {FILTERS.map((f) => (
+              {filters.map((f) => (
                 <SelectItem key={f.value} value={f.value}>
                   {f.label}
                 </SelectItem>
@@ -57,7 +62,7 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
         <ErrorState error={bookings.error} onRetry={() => bookings.refetch()} />
       ) : bookings.data.items.length === 0 ? (
         <EmptyState
-          title={queue ? "Nothing needs reassignment" : status ? "No bookings with this status" : "No bookings yet"}
+          title={queue ? "Nothing needs reassignment" : pastOpen ? "Every past visit is closed" : status ? "No bookings with this status" : "No bookings yet"}
           description={
             queue
               ? "When a technician takes time off, their bookings for those days show up here."

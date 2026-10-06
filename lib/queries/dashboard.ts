@@ -10,6 +10,7 @@ export type ManagerDashboard = {
   todayByStatus: Partial<Record<BookingStatus, number>>;
   pendingAssignments: { total: number; items: Booking[] };
   needsReassignment: { total: number; items: Booking[] };
+  pastOpen: { total: number; items: Booking[] }; // visit time over, still not closed (oldest first)
   availableTechnicians: { id: string; name: string }[];
   revenue: { today: string; thisMonth: string };
   popularServices: { serviceId: string; name: string; bookings: number }[];
