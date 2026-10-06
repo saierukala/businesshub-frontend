@@ -14,8 +14,8 @@ export async function AppShell({ user, children }: { user: User; children: React
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar user={user} />
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 print:hidden">
+      <SidebarInset className="bg-(--app-content)">
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-(--app-content) px-4 print:hidden">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
           <div className="ml-auto">
