@@ -10,7 +10,7 @@ export type ReviewRow = Review & {
   customer?: string; // staff only
 };
 
-export function useReviews(params: { page?: number; rating?: string; technicianId?: string }) {
+export function useReviews(params: { page?: number; rating?: string; technicianId?: string; from?: string; to?: string }) {
   return useQuery({
     queryKey: ["reviews", params],
     queryFn: () => api<Page<ReviewRow> & { average: number | null }>(`/reviews${qs(params)}`),

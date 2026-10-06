@@ -14,7 +14,7 @@ export function useTechnicians(params: { q?: string; page?: number }) {
 }
 
 export function useTechnician(id: string) {
-  return useQuery({ queryKey: ["technician", id], queryFn: () => api<Technician>(`/technicians/${id}`) });
+  return useQuery({ queryKey: ["technician", id], queryFn: () => api<Technician>(`/technicians/${id}`), enabled: !!id });
 }
 
 // Skills, areas and hours are each saved with a PUT that returns the whole technician.

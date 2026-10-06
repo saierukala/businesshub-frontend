@@ -14,7 +14,7 @@ export function useCustomers(params: { q?: string; page?: number }) {
 }
 
 export function useCustomer(id: string) {
-  return useQuery({ queryKey: ["customer", id], queryFn: () => api<Customer>(`/customers/${id}`) });
+  return useQuery({ queryKey: ["customer", id], queryFn: () => api<Customer>(`/customers/${id}`), enabled: !!id });
 }
 
 export function useSaveCustomer() {

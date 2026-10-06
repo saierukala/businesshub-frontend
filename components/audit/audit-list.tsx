@@ -1,13 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DatePicker } from "@/components/booking/date-picker";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
 import { PaginationBar } from "@/components/common/pagination-bar";
 import { useListParams } from "@/hooks/use-list-params";
-import { addDays, formatDate, formatTime, istDay } from "@/lib/format";
+import { formatDate, formatTime } from "@/lib/format";
 import { useAuditActions, useAuditLogs, type AuditEntry } from "@/lib/queries/audit";
 
 // "PAYMENT_RECORDED" -> "Payment recorded"
@@ -31,7 +30,6 @@ export function AuditList() {
   const action = get("action");
   const from = get("from");
   const to = get("to");
-  const today = istDay();
   const actions = useAuditActions();
   const logs = useAuditLogs({ page, action: action || undefined, from: from || undefined, to: to || undefined });
   const options = [{ value: "all", label: "All actions" }, ...(actions.data ?? []).map((a) => ({ value: a, label: pretty(a) }))];
@@ -51,14 +49,7 @@ export function AuditList() {
             ))}
           </SelectContent>
         </Select>
-        <DatePicker id="audit-from" value={from} min={addDays(today, -3650)} max={to || today} onChange={(d) => set({ from: d })} />
-        <span className="hidden text-muted-foreground sm:inline">to</span>
-        <DatePicker id="audit-to" value={to} min={from || addDays(today, -3650)} max={today} onChange={(d) => set({ to: d })} />
-        {(from || to) && (
-          <Button variant="ghost" onClick={() => set({ from: undefined, to: undefined })}>
-            Clear dates
-          </Button>
-        )}
+        <DateRangeFilter id="audit" from={from} to={to} onChange={set} />
       </div>
 
       {logs.isPending ? (

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
 import { PaginationBar } from "@/components/common/pagination-bar";
+import { DateRangeFilter } from "@/components/common/date-range-filter";
 import { Stars } from "@/components/reviews/stars";
 import { useListParams } from "@/hooks/use-list-params";
 import { formatDate } from "@/lib/format";
@@ -19,7 +20,9 @@ const FILTERS = [
 export function ReviewsList() {
   const { get, page, set } = useListParams();
   const rating = get("rating");
-  const reviews = useReviews({ page, rating: rating || undefined });
+  const from = get("from");
+  const to = get("to");
+  const reviews = useReviews({ page, rating: rating || undefined, from: from || undefined, to: to || undefined });
 
   return (
     <div className="flex flex-col gap-4">
@@ -36,6 +39,7 @@ export function ReviewsList() {
             ))}
           </SelectContent>
         </Select>
+        <DateRangeFilter id="reviews" from={from} to={to} onChange={set} />
         {reviews.data?.average != null && (
           <p className="text-sm text-muted-foreground">
             Average <span className="font-semibold text-foreground">{reviews.data.average.toFixed(1)}</span> from {reviews.data.total} {reviews.data.total === 1 ? "review" : "reviews"}
@@ -48,7 +52,10 @@ export function ReviewsList() {
       ) : reviews.isError ? (
         <ErrorState error={reviews.error} onRetry={() => reviews.refetch()} />
       ) : reviews.data.items.length === 0 ? (
-        <EmptyState title={rating ? "No reviews with this rating" : "No reviews yet"} description={rating ? "Try another rating." : "Customers can rate a repair once it is completed."} />
+        <EmptyState
+          title={from || to ? "No reviews on these days" : rating ? "No reviews with this rating" : "No reviews yet"}
+          description={from || to || rating ? "Try other filters." : "Customers can rate a repair once it is completed."}
+        />
       ) : (
         <>
           <div className="rounded-lg border">

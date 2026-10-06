@@ -13,6 +13,7 @@ type Props = {
   min: string; // earliest allowed day, same format
   max: string; // latest allowed day
   onChange: (day: string) => void;
+  placeholder?: string; // shown until a day is chosen
 };
 
 // The calendar works with browser-local Date objects. We only ever use their year, month and day
@@ -25,7 +26,7 @@ const toDay = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padSta
 
 const label = new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
-export function DatePicker({ id, value, min, max, onChange }: Props) {
+export function DatePicker({ id, value, min, max, onChange, placeholder = "Choose a date" }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,7 +37,7 @@ export function DatePicker({ id, value, min, max, onChange }: Props) {
         }
       >
         <CalendarIcon />
-        {value ? label.format(toDate(value)) : "Choose a date"}
+        {value ? label.format(toDate(value)) : placeholder}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
