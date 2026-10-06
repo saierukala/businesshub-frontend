@@ -2,15 +2,34 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarClock, CalendarPlus, Ban, Phone, UserCheck, UserX } from "lucide-react";
+import {
+  Ban,
+  CalendarClock,
+  CalendarDays,
+  CalendarPlus,
+  Inbox,
+  IndianRupee,
+  MapPin,
+  MessageSquareText,
+  Phone,
+  UserCheck,
+  UserRound,
+  UserX,
+  WashingMachine,
+  Wrench,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { ErrorState } from "@/components/common/query-states";
 import { StatusBadge } from "@/components/status-badge";
 import { AssignDialog } from "./assign-dialog";
+import { BookingHistory } from "./booking-history";
+import { BookingProgress } from "./booking-progress";
+import { DetailItem } from "./detail-item";
 import { PastOpenAlert } from "./past-open-alert";
 import { CancelDialog } from "./cancel-dialog";
 import { ExtraChargeDecision } from "./extra-charge-decision";
@@ -20,11 +39,13 @@ import { VisitSummary } from "./visit-summary";
 import { PaymentSection } from "@/components/payment/payment-section";
 import { ReviewSection } from "@/components/reviews/review-section";
 import { useBooking, useMarkNoShow } from "@/lib/queries/bookings";
-import { formatDuration, formatINR, formatPhone, formatSlot, formatDate, formatTime } from "@/lib/format";
+import { formatDuration, formatINR, formatPhone, formatSlot } from "@/lib/format";
 import type { BookingDetail as Detail, BookingStatus } from "@/lib/types";
 
 // Statuses where the visit can still be moved or cancelled. (The API enforces this and the time windows.)
 const OPEN: BookingStatus[] = ["PENDING", "CONFIRMED", "ASSIGNED"];
+const SOURCE_LABEL = { ONLINE: "Booked online", PHONE: "Phone call", WHATSAPP: "WhatsApp", WALK_IN: "Walk-in" } as const;
+
 // Staff can mark no-show once a technician is on the job AND the visit time has started (the API checks both).
 const NO_SHOW_FROM: BookingStatus[] = ["ASSIGNED", "EN_ROUTE", "ARRIVED"];
 
@@ -39,29 +60,26 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
 
   const b: Detail = query.data;
   const isOpen = OPEN.includes(b.status);
-  const rows: [string, React.ReactNode][] = [
-    ["When", formatSlot(b.startAt, b.endAt)],
-    ["Service", `${b.service.name}, about ${formatDuration(b.service.durationMinutes)}`],
-    ["Visit charge", formatINR(b.service.basePrice)],
-    ["Appliance", `${b.appliance.brand} ${b.appliance.category.name}${b.appliance.model ? ` (${b.appliance.model})` : ""}`],
-    ["Problem", b.problemDescription],
-    ["Address", [b.address.label, b.address.line1, b.address.area, b.address.city].filter(Boolean).join(", ")],
-    ["Technician", b.technician?.name ?? "Not assigned yet"],
-    ...(staff ? ([["Customer", `${b.customer.name} · ${formatPhone(b.customer.phone)}`], ["Source", b.source]] as [string, string][]) : []),
-  ];
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{b.bookingNumber}</h1>
-        <StatusBadge status={b.status} />
-        {b.needsReassignment && <span className="text-sm font-medium text-destructive">Needs a new technician</span>}
-        {b.followUpOf && (
-          <Link href={`${staff ? "/staff/bookings" : "/bookings"}/${b.followUpOf.id}`} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
-            Follow-up to {b.followUpOf.bookingNumber}
-          </Link>
-        )}
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">{b.bookingNumber}</h1>
+          <StatusBadge status={b.status} />
+          {b.needsReassignment && <span className="text-sm font-medium text-destructive">Needs a new technician</span>}
+          {b.followUpOf && (
+            <Link href={`${staff ? "/staff/bookings" : "/bookings"}/${b.followUpOf.id}`} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
+              Follow-up to {b.followUpOf.bookingNumber}
+            </Link>
+          )}
+        </div>
+        <p className="text-muted-foreground">
+          {b.service.name} · {formatSlot(b.startAt, b.endAt)}
+        </p>
       </div>
+
+      <BookingProgress status={b.status} />
 
       {/* No email on file: the app cannot message this customer (no SMS/WhatsApp in v1), so staff must phone them. */}
       {staff && !b.customer.email && [...OPEN, "EN_ROUTE", "ARRIVED", "IN_PROGRESS"].includes(b.status) && (
@@ -109,36 +127,58 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
         </div>
       )}
 
-      <dl className="divide-y rounded-lg border">
-        {rows.map(([k, v]) => (
-          <div key={k} className="grid gap-1 p-3 sm:grid-cols-[9rem_1fr]">
-            <dt className="text-sm text-muted-foreground">{k}</dt>
-            <dd className="font-medium break-words">{v}</dd>
-          </div>
-        ))}
-      </dl>
+      <Card>
+        <CardHeader>
+          <CardTitle>Booking details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-5 sm:grid-cols-2">
+            <DetailItem icon={CalendarDays} label="When">
+              {formatSlot(b.startAt, b.endAt)}
+            </DetailItem>
+            <DetailItem icon={Wrench} label="Service">
+              {b.service.name}
+              <span className="block text-sm font-normal text-muted-foreground">About {formatDuration(b.service.durationMinutes)}</span>
+            </DetailItem>
+            <DetailItem icon={IndianRupee} label="Visit charge">
+              {formatINR(b.service.basePrice)}
+            </DetailItem>
+            <DetailItem icon={WashingMachine} label="Appliance">
+              {b.appliance.brand} {b.appliance.category.name}
+              {b.appliance.model && <span className="block text-sm font-normal text-muted-foreground">Model {b.appliance.model}</span>}
+            </DetailItem>
+            <DetailItem icon={UserRound} label="Technician">
+              {b.technician?.name ?? <span className="font-normal text-muted-foreground">Not assigned yet</span>}
+            </DetailItem>
+            {staff && (
+              <DetailItem icon={Inbox} label="Source">
+                {SOURCE_LABEL[b.source]}
+              </DetailItem>
+            )}
+            <DetailItem icon={MapPin} label="Address" className="sm:col-span-2">
+              {b.address.label && <span className="block text-sm font-normal text-muted-foreground">{b.address.label}</span>}
+              {[b.address.line1, b.address.area, b.address.city].filter(Boolean).join(", ")}
+            </DetailItem>
+            <DetailItem icon={MessageSquareText} label="Problem" className="sm:col-span-2">
+              {b.problemDescription}
+            </DetailItem>
+            {staff && (
+              <DetailItem icon={Phone} label="Customer" className="sm:col-span-2">
+                {b.customer.name}
+                <a href={`tel:+91${b.customer.phone}`} className="block text-sm font-normal text-primary hover:underline">
+                  {formatPhone(b.customer.phone)}
+                </a>
+              </DetailItem>
+            )}
+          </dl>
+        </CardContent>
+      </Card>
 
       {b.visit && <VisitSummary visit={b.visit} />}
       <PaymentSection booking={b} canRecord={staff} receiptHref={`${staff ? "/staff/bookings" : "/bookings"}/${b.id}/receipt`} />
       <ReviewSection booking={b} canReview={!staff} />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">History</h2>
-        <ol className="flex flex-col gap-3 border-l pl-4">
-          {[...b.history].reverse().map((h, i) => (
-            <li key={i} className="text-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge status={h.toStatus} />
-                <span className="text-muted-foreground">
-                  {formatDate(h.createdAt)}, {formatTime(h.createdAt)}
-                  {h.changedBy && ` · ${h.changedBy.name}`}
-                </span>
-              </div>
-              {h.note && <p className="mt-1 text-muted-foreground">{h.note}</p>}
-            </li>
-          ))}
-        </ol>
-      </section>
+      <BookingHistory history={b.history} />
 
       {/* key: a fresh dialog (empty fields, no old error) each time it opens */}
       <RescheduleDialog key={`r${dialog}`} booking={b} open={dialog === "reschedule"} onOpenChange={(o) => !o && setDialog(null)} />
@@ -149,7 +189,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
         open={dialog === "noshow"}
         onOpenChange={(o) => !o && setDialog(null)}
         title="Mark as no-show?"
-        description={`The customer was not there for ${b.bookingNumber}. The technician's time is not released.`}
+        description={`The customer was not there for ${b.bookingNumber}. This ends the booking and frees the technician's time.`}
         confirmLabel="Mark no-show"
         destructive
         onConfirm={() =>

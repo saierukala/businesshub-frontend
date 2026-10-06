@@ -8,10 +8,11 @@ import { StatusBadge } from "@/components/status-badge";
 import { useBookings } from "@/lib/queries/bookings";
 import { useTechnicianDashboard } from "@/lib/queries/dashboard";
 import { useListParams } from "@/hooks/use-list-params";
-import { addDays, formatTime, formatWeekdayDate, istDay } from "@/lib/format";
+import { formatTime, formatWeekdayDate, istDay } from "@/lib/format";
 import type { Booking } from "@/lib/types";
 
-function JobCard({ job }: { job: Booking }) {
+// showDate: for jobs not on today, so two "10:00 am" cards on different days are not mistaken for each other.
+function JobCard({ job, showDate }: { job: Booking; showDate: boolean }) {
   return (
     <Link
       href={`/tech/jobs/${job.id}`}
@@ -19,7 +20,10 @@ function JobCard({ job }: { job: Booking }) {
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-lg font-semibold">{formatTime(job.startAt)}</span>
+          <span className="text-lg font-semibold">
+            {showDate && <span className="font-normal text-muted-foreground">{formatWeekdayDate(job.startAt)} · </span>}
+            {formatTime(job.startAt)}
+          </span>
           <div className="flex items-center gap-1.5">
             {job.status === "COMPLETED" && (
               <span className={job.paid ? "text-xs font-medium text-green-700 dark:text-green-400" : "text-xs font-medium text-destructive"}>
@@ -44,13 +48,13 @@ function JobCard({ job }: { job: Booking }) {
   );
 }
 
-function Group({ title, jobs }: { title: string; jobs: Booking[] }) {
+function Group({ title, jobs, showDate = true }: { title: string; jobs: Booking[]; showDate?: boolean }) {
   if (jobs.length === 0) return null;
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{title}</h2>
       {jobs.map((j) => (
-        <JobCard key={j.id} job={j} />
+        <JobCard key={j.id} job={j} showDate={showDate} />
       ))}
     </section>
   );
@@ -75,17 +79,19 @@ function TodayProgress() {
 export function TechJobs() {
   const { page, set } = useListParams();
   const today = istDay();
-  // From yesterday, so a visit that ran over midnight or was left unfinished is still shown.
-  const jobs = useBookings({ sort: "soonest", from: addDays(today, -1), pageSize: 50, page, hideCancelled: true });
+  // Today and later: this list's total is exactly the cards shown under Today and Coming up.
+  const jobs = useBookings({ sort: "soonest", from: today, pageSize: 20, page, hideCancelled: true });
+  // Any earlier day, still open (never completed, cancelled or no-show): the API's "past, still open", own jobs only.
+  const unfinished = useBookings({ sort: "soonest", pastOpen: true, pageSize: 50 });
 
-  if (jobs.isPending) return <ListSkeleton rows={3} />;
+  if (jobs.isPending || unfinished.isPending) return <ListSkeleton rows={3} />;
   if (jobs.isError) return <ErrorState error={jobs.error} onRetry={() => jobs.refetch()} />;
+  if (unfinished.isError) return <ErrorState error={unfinished.error} onRetry={() => unfinished.refetch()} />;
 
   const day = (j: Booking) => istDay(new Date(j.startAt));
-  const active = jobs.data.items;
-  const earlierUnfinished = active.filter((j) => day(j) < today && j.status !== "COMPLETED");
-  const todays = active.filter((j) => day(j) === today);
-  const later = active.filter((j) => day(j) > today);
+  const earlierUnfinished = unfinished.data.items.filter((j) => day(j) < today); // today's are in the Today group
+  const todays = jobs.data.items.filter((j) => day(j) === today);
+  const later = jobs.data.items.filter((j) => day(j) > today);
 
   if (earlierUnfinished.length + todays.length + later.length === 0) {
     return <EmptyState title="No jobs assigned" description="When the manager assigns you a booking, it shows up here." />;
@@ -95,10 +101,10 @@ export function TechJobs() {
     <div className="flex flex-col gap-6">
       <TodayProgress />
       <Group title="Not finished" jobs={earlierUnfinished} />
-      <Group title={`Today, ${formatWeekdayDate(new Date().toISOString())}`} jobs={todays} />
+      <Group title={`Today, ${formatWeekdayDate(new Date().toISOString())}`} jobs={todays} showDate={false} />
       {todays.length === 0 && <p className="text-sm text-muted-foreground">Nothing scheduled for today.</p>}
       <Group title="Coming up" jobs={later} />
-      <PaginationBar {...jobs.data} onPageChange={(p) => set({ page: p })} />
+      {jobs.data.total > 0 && <PaginationBar {...jobs.data} onPageChange={(p) => set({ page: p })} />}
     </div>
   );
 }

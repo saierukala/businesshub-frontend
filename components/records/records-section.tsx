@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { EllipsisVertical, History, Pencil, Plus, Trash2 } from "lucide-react";
+import { EllipsisVertical, History, Pencil, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,17 +25,18 @@ type Props<K extends Kind> = {
   kind: K;
   customerId?: string; // undefined = the logged-in customer
   title: string;
+  description: string; // one line under the section title
   noun: string; // "address" / "appliance"
   emptyTitle: string;
   emptyDescription: string;
-  describe: (item: Item<K>) => { title: string; subtitle: string };
+  describe: (item: Item<K>) => { title: string; subtitle: string; icon: LucideIcon };
   renderForm: (item: Item<K> | undefined, onDone: () => void) => React.ReactNode;
 };
 
 // List + add + edit + delete for a customer's addresses or appliances.
 // Used on the customer's own account page and on the staff customer page.
 export function RecordsSection<K extends Kind>(props: Props<K>) {
-  const { kind, customerId, title, noun, emptyTitle, emptyDescription, describe, renderForm } = props;
+  const { kind, customerId, title, description, noun, emptyTitle, emptyDescription, describe, renderForm } = props;
   const records = useCustomerRecords(kind, customerId);
   const remove = useDeleteCustomerRecord(kind, customerId);
   const [editing, setEditing] = useState<Item<K> | "new" | null>(null);
@@ -51,8 +52,16 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            {title}
+            {records.data && records.data.total > 0 && (
+              <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">{records.data.total}</span>
+            )}
+          </h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
         {records.data && records.data.items.length > 0 && addButton}
       </div>
 
@@ -68,32 +77,35 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
             const d = describe(item);
             return (
               <Card key={item.id} size="sm">
-                <CardHeader>
-                  <CardTitle>{d.title}</CardTitle>
-                  <CardDescription>{d.subtitle}</CardDescription>
-                  <CardAction>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${d.title}`} />}
-                      >
-                        <EllipsisVertical />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {kind === "appliances" && (
-                          <DropdownMenuItem onClick={() => setHistoryOf(item)}>
-                            <History /> Service history
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onClick={() => setEditing(item)}>
-                          <Pencil /> Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive" onClick={() => setDeleting(item)}>
-                          <Trash2 /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardAction>
-                </CardHeader>
+                <CardContent className="flex items-start gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
+                    <d.icon className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium">{d.title}</div>
+                    <p className="text-sm whitespace-pre-line text-muted-foreground">{d.subtitle}</p>
+                    {kind === "appliances" && (
+                      <Button variant="link" size="sm" className="mt-1 h-auto px-0" onClick={() => setHistoryOf(item)}>
+                        <History /> Service history
+                      </Button>
+                    )}
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${d.title}`} />}
+                    >
+                      <EllipsisVertical />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setEditing(item)}>
+                        <Pencil /> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem variant="destructive" onClick={() => setDeleting(item)}>
+                        <Trash2 /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardContent>
               </Card>
             );
           })}

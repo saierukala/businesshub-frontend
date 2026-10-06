@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -16,14 +17,24 @@ import { AddressForm } from "@/components/records/address-form";
 import { ChoiceList } from "./choice-list";
 import { SlotPicker } from "./slot-picker";
 import { ReviewStep } from "./review-step";
+import { WizardStepper } from "./wizard-stepper";
+import { WizardSummary } from "./wizard-summary";
 import { useServices } from "@/lib/queries/catalog";
 import { useCustomerRecords } from "@/lib/queries/customer-records";
 import { useCreateBooking } from "@/lib/queries/bookings";
 import { ApiError } from "@/lib/api";
 import { formatDuration, formatINR } from "@/lib/format";
+import { addressIcon, applianceIcon } from "@/lib/record-icons";
 import type { SlotOption } from "@/lib/types";
 
-const STEPS = ["Appliance", "Problem and service", "Address", "Date and time", "Review"];
+const STEPS = ["Appliance", "Problem & service", "Address", "Date & time", "Review"];
+const HINTS = [
+  "Which appliance needs a repair? Saved appliances are listed; add a new one if it is not here.",
+  "Tell us what is wrong and pick the repair service.",
+  "Where should the technician come?",
+  "Pick a day, then one of the free times. Only times a qualified technician can make are shown.",
+  "Check the details and confirm.",
+];
 const SOURCES = [
   { value: "PHONE", label: "Phone call" },
   { value: "WHATSAPP", label: "WhatsApp" },
@@ -117,192 +128,196 @@ export function BookingWizard({ customerId }: { customerId?: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Step {step + 1} of {STEPS.length}
-        </p>
-        <h2 className="text-xl font-semibold">{STEPS[step]}</h2>
-        <div className="mt-2 flex gap-1" aria-hidden="true">
-          {STEPS.map((s, i) => (
-            <div key={s} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`} />
-          ))}
-        </div>
-      </div>
+      <WizardStepper steps={STEPS} current={step} onBack={setStep} />
 
-      {step === 0 &&
-        (appliances.isPending ? (
-          <ListSkeleton rows={2} />
-        ) : appliances.isError ? (
-          <ErrorState error={appliances.error} onRetry={() => appliances.refetch()} />
-        ) : (
-          <>
-            {appliances.data.items.length === 0 && (
-              <EmptyState title="No appliances yet" description="Add the appliance that needs repair. It is saved for next time." />
-            )}
-            <ChoiceList
-              label="Appliance"
-              items={appliances.data.items.map((a) => ({
-                id: a.id,
-                title: `${a.brand} ${a.category.name}`,
-                subtitle: [a.model, a.purchaseYear && `bought ${a.purchaseYear}`].filter(Boolean).join(" · ") || undefined,
-              }))}
-              value={draft.applianceId}
-              onChange={(id) => set({ applianceId: id }, ["serviceId", "slot", "date", "technicianId"])}
-              addLabel="Add another appliance"
-              onAdd={() => setAdding("appliance")}
-            />
-          </>
-        ))}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <section className="flex flex-col gap-5 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:p-6">
+          <div>
+            <h2 className="text-lg font-semibold">{STEPS[step]}</h2>
+            <p className="text-sm text-muted-foreground">{HINTS[step]}</p>
+          </div>
 
-      {step === 1 && (
-        <div className="flex flex-col gap-6">
-          <Field>
-            <FieldLabel htmlFor="problem">What is wrong?</FieldLabel>
-            <Textarea
-              id="problem"
-              rows={3}
-              maxLength={1000}
-              placeholder="e.g. Not cooling, makes a loud noise at night"
-              value={draft.problem}
-              onChange={(e) => set({ problem: e.target.value })}
-            />
-          </Field>
-          {services.isPending ? (
-            <ListSkeleton rows={2} />
-          ) : services.isError ? (
-            <ErrorState error={services.error} onRetry={() => services.refetch()} />
-          ) : services.data.items.length === 0 ? (
-            <EmptyState title="No repair service for this appliance yet" description="Add one on the Services page, or call to help with this booking." />
-          ) : (
-            <ChoiceList
-              label="Service"
-              items={services.data.items.map((s) => ({
-                id: s.id,
-                title: s.name,
-                subtitle: `About ${formatDuration(s.durationMinutes)}`,
-                aside: formatINR(s.basePrice),
-              }))}
-              value={draft.serviceId}
-              onChange={(id) => set({ serviceId: id }, ["slot", "date", "technicianId"])}
-            />
-          )}
-        </div>
-      )}
+          {step === 0 &&
+            (appliances.isPending ? (
+              <ListSkeleton rows={2} />
+            ) : appliances.isError ? (
+              <ErrorState error={appliances.error} onRetry={() => appliances.refetch()} />
+            ) : (
+              <>
+                {appliances.data.items.length === 0 && (
+                  <EmptyState title="No appliances yet" description="Add the appliance that needs repair. It is saved for next time." />
+                )}
+                <ChoiceList
+                  label="Appliance"
+                  items={appliances.data.items.map((a) => ({
+                    id: a.id,
+                    icon: applianceIcon(a.category.name),
+                    title: `${a.brand} ${a.category.name}`,
+                    subtitle: [a.model, a.purchaseYear && `bought ${a.purchaseYear}`].filter(Boolean).join(" · ") || undefined,
+                  }))}
+                  value={draft.applianceId}
+                  onChange={(id) => set({ applianceId: id }, ["serviceId", "slot", "date", "technicianId"])}
+                  addLabel="Add another appliance"
+                  onAdd={() => setAdding("appliance")}
+                />
+              </>
+            ))}
 
-      {step === 2 &&
-        (addresses.isPending ? (
-          <ListSkeleton rows={2} />
-        ) : addresses.isError ? (
-          <ErrorState error={addresses.error} onRetry={() => addresses.refetch()} />
-        ) : (
-          <>
-            {addresses.data.items.length === 0 && <EmptyState title="No addresses yet" description="Add where the technician should come." />}
-            <ChoiceList
-              label="Address"
-              items={addresses.data.items.map((a) => ({
-                id: a.id,
-                title: a.label,
-                subtitle: [a.line1, a.area, a.city, a.pincode].filter(Boolean).join(", "),
-              }))}
-              value={draft.addressId}
-              onChange={(id) => set({ addressId: id }, ["slot", "date", "technicianId"])}
-              addLabel="Add another address"
-              onAdd={() => setAdding("address")}
-            />
-          </>
-        ))}
-
-      {step === 3 && service && address && (
-        <>
-          <SlotPicker
-            serviceId={service.id}
-            area={address.area}
-            date={draft.date}
-            slot={draft.slot}
-            onChange={(date, slot) => set({ date, slot, technicianId: undefined })}
-          />
-          {staff && draft.slot?.technicians && (
-            <Field>
-              <FieldLabel htmlFor="technician">Technician</FieldLabel>
-              <Select
-                items={[{ value: "auto", label: "Assign automatically" }, ...draft.slot.technicians.map((t) => ({ value: t.id, label: t.name }))]}
-                value={draft.technicianId ?? "auto"}
-                onValueChange={(v) => set({ technicianId: !v || v === "auto" ? undefined : v })}
-              >
-                <SelectTrigger id="technician" className="w-full sm:w-72">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Assign automatically</SelectItem>
-                  {draft.slot.technicians.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldDescription>
-                Free at this time: {draft.slot.technicians.map((t) => t.name).join(", ")}. Choosing one assigns them now.
-              </FieldDescription>
-            </Field>
-          )}
-        </>
-      )}
-
-      {step === 4 && appliance && service && address && draft.slot && (
-        <div className="flex flex-col gap-6">
-          <ReviewStep
-            appliance={appliance}
-            service={service}
-            address={address}
-            problem={draft.problem.trim()}
-            slot={draft.slot}
-            extraRows={staff ? [["Technician", technicianName ?? "Assigned automatically"]] : []}
-          />
-          {staff && (
-            <Field>
-              <FieldLabel htmlFor="source">Where did this booking come from?</FieldLabel>
-              <Select items={SOURCES} value={draft.source ?? null} onValueChange={(v) => set({ source: v ?? undefined })}>
-                <SelectTrigger id="source" className="w-full sm:w-72">
-                  <SelectValue placeholder="Choose…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SOURCES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          )}
-          {needsOverride && (
-            <div className="flex flex-col gap-3">
-              <FormAlert message={needsOverride} />
+          {step === 1 && (
+            <div className="flex flex-col gap-6">
               <Field>
-                <FieldLabel htmlFor="override">Reason for booking inside the cutoff</FieldLabel>
-                <Textarea id="override" rows={2} maxLength={300} value={draft.overrideReason} onChange={(e) => set({ overrideReason: e.target.value })} />
-                <FieldDescription>Saved in the audit log.</FieldDescription>
+                <FieldLabel htmlFor="problem">What is wrong?</FieldLabel>
+                <Textarea
+                  id="problem"
+                  rows={3}
+                  maxLength={1000}
+                  placeholder="e.g. Not cooling, makes a loud noise at night"
+                  value={draft.problem}
+                  onChange={(e) => set({ problem: e.target.value })}
+                />
               </Field>
+              {services.isPending ? (
+                <ListSkeleton rows={2} />
+              ) : services.isError ? (
+                <ErrorState error={services.error} onRetry={() => services.refetch()} />
+              ) : services.data.items.length === 0 ? (
+                <EmptyState title="No repair service for this appliance yet" description="Add one on the Services page, or call to help with this booking." />
+              ) : (
+                <ChoiceList
+                  label="Service"
+                  items={services.data.items.map((s) => ({
+                    id: s.id,
+                    icon: Wrench,
+                    title: s.name,
+                    subtitle: `About ${formatDuration(s.durationMinutes)}`,
+                    aside: formatINR(s.basePrice),
+                  }))}
+                  value={draft.serviceId}
+                  onChange={(id) => set({ serviceId: id }, ["slot", "date", "technicianId"])}
+                />
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      <div className="flex justify-between gap-3">
-        <Button type="button" variant="outline" size="lg" disabled={step === 0 || create.isPending} onClick={() => setStep(step - 1)}>
-          Back
-        </Button>
-        {step < STEPS.length - 1 ? (
-          <Button type="button" size="lg" disabled={!canContinue} onClick={() => setStep(step + 1)}>
-            Continue
-          </Button>
-        ) : (
-          <Button type="button" size="lg" disabled={create.isPending || !canConfirm} aria-busy={create.isPending} onClick={confirm}>
-            {create.isPending && <Spinner />}
-            Confirm booking
-          </Button>
-        )}
+          {step === 2 &&
+            (addresses.isPending ? (
+              <ListSkeleton rows={2} />
+            ) : addresses.isError ? (
+              <ErrorState error={addresses.error} onRetry={() => addresses.refetch()} />
+            ) : (
+              <>
+                {addresses.data.items.length === 0 && <EmptyState title="No addresses yet" description="Add where the technician should come." />}
+                <ChoiceList
+                  label="Address"
+                  items={addresses.data.items.map((a) => ({
+                    id: a.id,
+                    icon: addressIcon(a.label),
+                    title: a.label,
+                    subtitle: [a.line1, a.area, a.city, a.pincode].filter(Boolean).join(", "),
+                  }))}
+                  value={draft.addressId}
+                  onChange={(id) => set({ addressId: id }, ["slot", "date", "technicianId"])}
+                  addLabel="Add another address"
+                  onAdd={() => setAdding("address")}
+                />
+              </>
+            ))}
+
+          {step === 3 && service && address && (
+            <>
+              <SlotPicker
+                serviceId={service.id}
+                area={address.area}
+                date={draft.date}
+                slot={draft.slot}
+                onChange={(date, slot) => set({ date, slot, technicianId: undefined })}
+              />
+              {staff && draft.slot?.technicians && (
+                <Field>
+                  <FieldLabel htmlFor="technician">Technician</FieldLabel>
+                  <Select
+                    items={[{ value: "auto", label: "Assign automatically" }, ...draft.slot.technicians.map((t) => ({ value: t.id, label: t.name }))]}
+                    value={draft.technicianId ?? "auto"}
+                    onValueChange={(v) => set({ technicianId: !v || v === "auto" ? undefined : v })}
+                  >
+                    <SelectTrigger id="technician" className="w-full sm:w-72">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Assign automatically</SelectItem>
+                      {draft.slot.technicians.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    Free at this time: {draft.slot.technicians.map((t) => t.name).join(", ")}. Choosing one assigns them now.
+                  </FieldDescription>
+                </Field>
+              )}
+            </>
+          )}
+
+          {step === 4 && appliance && service && address && draft.slot && (
+            <div className="flex flex-col gap-6">
+              <ReviewStep
+                appliance={appliance}
+                service={service}
+                address={address}
+                problem={draft.problem.trim()}
+                slot={draft.slot}
+                extraRows={staff ? [["Technician", technicianName ?? "Assigned automatically"]] : []}
+              />
+              {staff && (
+                <Field>
+                  <FieldLabel htmlFor="source">Where did this booking come from?</FieldLabel>
+                  <Select items={SOURCES} value={draft.source ?? null} onValueChange={(v) => set({ source: v ?? undefined })}>
+                    <SelectTrigger id="source" className="w-full sm:w-72">
+                      <SelectValue placeholder="Choose…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SOURCES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+              {needsOverride && (
+                <div className="flex flex-col gap-3">
+                  <FormAlert message={needsOverride} />
+                  <Field>
+                    <FieldLabel htmlFor="override">Reason for booking inside the cutoff</FieldLabel>
+                    <Textarea id="override" rows={2} maxLength={300} value={draft.overrideReason} onChange={(e) => set({ overrideReason: e.target.value })} />
+                    <FieldDescription>Saved in the audit log.</FieldDescription>
+                  </Field>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-between gap-3 border-t pt-4">
+            <Button type="button" variant="outline" size="lg" disabled={step === 0 || create.isPending} onClick={() => setStep(step - 1)}>
+              <ArrowLeft /> Back
+            </Button>
+            {step < STEPS.length - 1 ? (
+              <Button type="button" size="lg" disabled={!canContinue} onClick={() => setStep(step + 1)}>
+                Continue <ArrowRight />
+              </Button>
+            ) : (
+              <Button type="button" size="lg" disabled={create.isPending || !canConfirm} aria-busy={create.isPending} onClick={confirm}>
+                {create.isPending && <Spinner />}
+                Confirm booking
+              </Button>
+            )}
+          </div>
+        </section>
+
+        <WizardSummary appliance={appliance} service={service} address={address} slot={draft.slot} />
       </div>
 
       <FormDialog open={adding !== null} onOpenChange={(o) => !o && setAdding(null)} title={adding === "appliance" ? "Add appliance" : "Add address"}>

@@ -53,8 +53,11 @@ export function ExtraChargeCard({ booking }: { booking: BookingDetail }) {
   const amount = extra.amount ? formatINR(extra.amount) : "";
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Extra work</h2>
+    <section className="flex flex-col gap-4 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+      <div>
+        <h2 className="font-semibold">Extra work</h2>
+        <p className="text-sm text-muted-foreground">Anything beyond the base service needs the customer&apos;s approval first.</p>
+      </div>
 
       {extra.status === "PROPOSED" && (
         <Alert>

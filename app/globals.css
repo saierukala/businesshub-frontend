@@ -130,3 +130,15 @@
     @apply font-sans;
   }
 }
+/* Printing (receipts): no browser header/footer line (they need a page margin to appear), so the
+   margin moves inside the page, and paper is always white. */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    padding: 14mm;
+    background: white;
+  }
+}

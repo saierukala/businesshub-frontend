@@ -14,7 +14,7 @@ import { visitSchema, type VisitInput } from "@/lib/schemas/visit";
 import type { BookingDetail } from "@/lib/types";
 
 // What the technician found and did. "Save notes" keeps a draft; "Complete visit" needs the diagnosis and the
-// work done, and finishes the booking. The Complete button sits in a bar fixed to the bottom of the screen
+// work done, and finishes the booking. The Complete button sits in a bar that sticks to the bottom of the screen
 // so it is always under the thumb.
 export function VisitForm({ booking }: { booking: BookingDetail }) {
   const save = useSaveVisit(booking.id);
@@ -66,8 +66,8 @@ export function VisitForm({ booking }: { booking: BookingDetail }) {
         </FieldGroup>
       </form>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 p-3 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl flex-col gap-1">
+      <div className="sticky bottom-3 z-30 rounded-xl border bg-background/95 p-2 shadow-lg backdrop-blur">
+        <div className="flex flex-col gap-1">
           {waiting && <p className="text-center text-sm text-muted-foreground">Waiting for the customer to answer the extra charge.</p>}
           <Button type="submit" form="visit-form" size="lg" className="h-12 w-full text-base" disabled={complete.isPending || waiting} aria-busy={complete.isPending}>
             {complete.isPending && <Spinner />}
