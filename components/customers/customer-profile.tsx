@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ErrorState } from "@/components/common/query-states";
 import { FormDialog } from "@/components/common/form-dialog";
 import { CustomerForm } from "./customer-form";
+import { DeviceConnect } from "./device-connect";
 import { useCustomer, useInviteCustomer } from "@/lib/queries/customers";
 import { formatDate, formatPhone } from "@/lib/format";
 
@@ -73,6 +74,7 @@ export function CustomerProfile({ id }: { id: string }) {
             </Button>
           </div>
         )}
+        <DeviceConnect customer={c} />
       </CardContent>
 
       <FormDialog open={editing} onOpenChange={setEditing} title="Edit customer">

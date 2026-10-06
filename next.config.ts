@@ -13,6 +13,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  devIndicators: false, // hides the round "N" badge in the corner while developing (real errors still show)
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
