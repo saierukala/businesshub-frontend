@@ -57,7 +57,10 @@ export function ServicesList() {
                   <TableRow key={s.id} className={s.active ? undefined : "text-muted-foreground"}>
                     <TableCell>
                       <div className="font-medium">{s.name}</div>
-                      <div className="text-xs text-muted-foreground">{s.category.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {s.category.name}
+                        {!s.category.active && " · appliance type turned off (not bookable)"}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">{formatDuration(s.durationMinutes)}</TableCell>
                     <TableCell className="text-right tabular-nums">{formatINR(s.basePrice)}</TableCell>

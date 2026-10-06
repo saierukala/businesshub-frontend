@@ -3,7 +3,8 @@ import type { Role } from "@/lib/auth";
 
 export type Page<T> = { items: T[]; page: number; pageSize: number; total: number; totalPages: number };
 
-export type Category = { id: string; name: string };
+// Appliance type (the API calls it a service category). Inactive: no new bookings or appliances.
+export type Category = { id: string; name: string; active: boolean };
 
 export type Service = {
   id: string;

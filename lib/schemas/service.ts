@@ -20,3 +20,9 @@ export const serviceSchema = z.object({
 
 export type ServiceInput = z.input<typeof serviceSchema>;
 export type ServiceOutput = z.output<typeof serviceSchema>;
+
+// Appliance type name (mirrors the backend: 2 to 60 characters, unique).
+export const categorySchema = z.object({
+  name: z.string().trim().min(2, "Enter at least 2 characters").max(60, "At most 60 characters"),
+});
+export type CategoryInput = z.infer<typeof categorySchema>;
