@@ -19,7 +19,8 @@ const METHODS = [
   { value: "UPI", label: "UPI", icon: Smartphone },
 ] as const;
 
-const METHOD_LABEL = { CASH: "cash", UPI: "UPI", CARD: "card", ONLINE: "online" };
+// "Paid ₹499 in cash / by UPI / by card / online"
+const METHOD_PHRASE = { CASH: "in cash", UPI: "by UPI", CARD: "by card", ONLINE: "online" };
 
 type Props = {
   booking: BookingDetail;
@@ -49,12 +50,12 @@ export function PaymentSection({ booking, receiptHref, canRecord, canPayOnline =
             <BadgeCheck className="size-6 text-green-600" />
             <div>
               <div className="font-semibold">
-                Paid {formatINR(p.amount)} by {METHOD_LABEL[p.method]}
+                Paid {formatINR(p.amount)} {METHOD_PHRASE[p.method]}
               </div>
               <div className="text-sm text-muted-foreground">
                 {p.paidAt && `${formatDate(p.paidAt)}, ${formatTime(p.paidAt)}`}
                 {p.reference && ` · Ref ${p.reference}`}
-                {p.recordedBy && ` · Recorded by ${p.recordedBy}`}
+                {p.method === "ONLINE" ? " · via Razorpay" : p.recordedBy && ` · Recorded by ${p.recordedBy}`}
               </div>
             </div>
           </div>
@@ -67,13 +68,24 @@ export function PaymentSection({ booking, receiptHref, canRecord, canPayOnline =
   }
 
   if (!canRecord) {
+    const extra = booking.visit?.extraCharge.status === "APPROVED" && booking.visit.extraCharge.amount;
     return (
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Payment</h2>
-        <p className="rounded-lg border p-4">
-          <span className="font-semibold">{due} to pay.</span> You can pay the technician in cash or by UPI. A receipt appears here once it is recorded.
+        <div className="flex flex-col gap-4 rounded-xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Amount due</div>
+            <div className="text-3xl font-semibold tracking-tight tabular-nums">{due}</div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              {booking.service.name} {formatINR(booking.service.basePrice)}
+              {extra && ` + approved extra ${formatINR(extra)}`}
+            </div>
+          </div>
+          {canPayOnline && <PayOnlineButton bookingId={booking.id} amountLabel={due} />}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Prefer to pay in person? Pay the technician in cash or by UPI. Your receipt appears here once the payment is recorded.
         </p>
-        {canPayOnline && <PayOnlineButton bookingId={booking.id} amountLabel={due} />}
       </section>
     );
   }

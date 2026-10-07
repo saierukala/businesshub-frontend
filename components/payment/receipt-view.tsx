@@ -7,7 +7,7 @@ import { ErrorState } from "@/components/common/query-states";
 import { useReceipt } from "@/lib/queries/payments";
 import { formatDate, formatINR, formatPhone, formatTime } from "@/lib/format";
 
-const METHOD_LABEL = { CASH: "Cash", UPI: "UPI", CARD: "Card", ONLINE: "Online" };
+const METHOD_LABEL = { CASH: "cash", UPI: "UPI", CARD: "card", ONLINE: "online payment (Razorpay)" };
 
 function InfoBox({ label, children }: { label: string; children: React.ReactNode }) {
   return (

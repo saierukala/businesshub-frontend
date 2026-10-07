@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard } from "lucide-react";
+import { CreditCard, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -28,10 +28,19 @@ export function PayOnlineButton({ bookingId, amountLabel }: { bookingId: string;
         order_id: order.orderId,
         amount: order.amountPaise,
         currency: order.currency,
-        name: "HomeFix Appliance Services",
+        // How Razorpay's window looks: our short name and logo, the app's dark ink colour, UPI first (most used in India).
+        name: "HomeFix",
         description: order.description,
+        image: `${window.location.origin}/homefix-logo.svg`,
         prefill: order.prefill,
-        theme: { color: "#e82339" },
+        theme: { color: "#151f24", backdrop_color: "rgba(21, 31, 36, 0.6)" },
+        config: {
+          display: {
+            blocks: { upi: { name: "Pay with UPI", instruments: [{ method: "upi" }] } },
+            sequence: ["block.upi"],
+            preferences: { show_default_blocks: true }, // cards and netbanking still listed below
+          },
+        },
         handler: (result) =>
           confirm.mutate(
             { orderId: result.razorpay_order_id, paymentId: result.razorpay_payment_id, signature: result.razorpay_signature },
@@ -51,9 +60,15 @@ export function PayOnlineButton({ bookingId, amountLabel }: { bookingId: string;
   }
 
   return (
-    <Button size="lg" className="h-12 w-full text-base sm:w-fit" disabled={busy} aria-busy={busy} onClick={pay}>
-      {busy ? <Spinner /> : <CreditCard />}
-      {confirm.isPending ? "Confirming payment…" : `Pay ${amountLabel} online`}
-    </Button>
+    <div className="flex flex-col gap-2 sm:items-end">
+      <Button size="lg" className="h-12 w-full px-6 text-base sm:w-auto" disabled={busy} aria-busy={busy} onClick={pay}>
+        {busy ? <Spinner /> : <CreditCard />}
+        {confirm.isPending ? "Confirming payment…" : `Pay ${amountLabel} online`}
+      </Button>
+      <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:justify-end">
+        <ShieldCheck className="size-3.5 text-green-600" aria-hidden />
+        Secured by Razorpay · UPI, cards, netbanking
+      </p>
+    </div>
   );
 }
