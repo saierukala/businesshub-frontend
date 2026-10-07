@@ -1,6 +1,6 @@
 // SERVER ONLY (uses next/headers). Asks the backend who is logged in, forwarding the
 // browser's session cookie. Used by layouts and pages to redirect before rendering.
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { homeFor, type Role, type User } from "@/lib/auth";
 
@@ -28,9 +28,13 @@ export async function getCurrentUser(): Promise<User | null> {
 }
 
 // Layout guard. This is UX only: the backend checks role and ownership on every request.
+// After login you return to the page you asked for (set by proxy.ts); `loginNext` is the fallback.
 export async function requireUser(roles: Role[], loginNext: string): Promise<User> {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(loginNext)}`);
+  if (!user) {
+    const asked = (await headers()).get("x-pathname");
+    redirect(`/login?next=${encodeURIComponent(asked || loginNext)}`);
+  }
   if (!roles.includes(user.role)) redirect(homeFor(user.role));
   return user;
 }

@@ -2,13 +2,41 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 // The server-side login check, with the browser cookie and the backend faked.
 let cookie: { value: string } | undefined = { value: "token" };
-vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => cookie }) }));
+let askedPath: string | null = null; // what proxy.ts would put in x-pathname
+vi.mock("next/headers", () => ({
+  cookies: async () => ({ get: () => cookie }),
+  headers: async () => new Headers(askedPath ? { "x-pathname": askedPath } : {}),
+}));
+vi.mock("next/navigation", () => ({
+  redirect: (url: string) => {
+    throw new Error(`REDIRECT ${url}`);
+  },
+}));
 
-const { getCurrentUser } = await import("./session");
+const { getCurrentUser, requireUser } = await import("./session");
 
 afterEach(() => {
   vi.unstubAllGlobals();
   cookie = { value: "token" };
+  askedPath = null;
+});
+
+describe("requireUser", () => {
+  it("logged out: back to the exact page asked for after login", async () => {
+    cookie = undefined;
+    askedPath = "/bookings/abc?tab=history";
+    await expect(requireUser(["CUSTOMER"], "/home")).rejects.toThrow("REDIRECT /login?next=%2Fbookings%2Fabc%3Ftab%3Dhistory");
+  });
+
+  it("without the header it falls back to the area's home", async () => {
+    cookie = undefined;
+    await expect(requireUser(["CUSTOMER"], "/home")).rejects.toThrow("REDIRECT /login?next=%2Fhome");
+  });
+
+  it("wrong role: to their own area", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ user: { id: "u1", role: "CUSTOMER" } }))));
+    await expect(requireUser(["OWNER", "MANAGER"], "/staff")).rejects.toThrow("REDIRECT /home");
+  });
 });
 
 describe("getCurrentUser", () => {

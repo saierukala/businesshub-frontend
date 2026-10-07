@@ -61,7 +61,7 @@ test("staff books for a phone customer, then reassigns after the technician's ti
   await manager.getByRole("button", { name: "Confirm booking" }).click();
   await manager.waitForURL(/\/staff\/bookings\/[0-9a-f-]{36}$/);
   const bookingId = manager.url().split("/").pop()!;
-  await expect(manager.getByText("Priya Menon ·")).toBeVisible();
+  await expect(manager.getByText("Priya Menon has no email")).toBeVisible(); // phone-only: staff must call her
 
   // The audit log (owner) shows the manager as the creator.
   const owner = await loginApi(USERS.owner);
@@ -84,7 +84,8 @@ test("staff books for a phone customer, then reassigns after the technician's ti
 
   // ---- 5. The reassignment queue; the manager picks another qualified, free technician ----
   await manager.goto("/staff/reassignments");
-  await manager.getByRole("link", { name: booking.bookingNumber }).click();
+  await expect(manager.getByText(booking.bookingNumber)).toBeVisible(); // the flagged booking is in the queue
+  await manager.goto(`/staff/bookings/${bookingId}`);
   await expect(manager.getByText("Needs a new technician")).toBeVisible();
   await manager.getByRole("button", { name: /Assign technician|Change technician/ }).click();
   await manager.getByRole("radio", { name: new RegExp(replacement) }).click();

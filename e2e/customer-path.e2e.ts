@@ -23,7 +23,7 @@ test("customer self-service: book, assign, repair with an extra charge, pay, rev
   await pickSlot(ravi, "10:00 am");
   await ravi.getByRole("button", { name: "Continue" }).click();
 
-  await expect(ravi.getByText("₹499")).toBeVisible(); // the visit charge on the review step
+  await expect(ravi.getByText("₹499").first()).toBeVisible(); // the visit charge on the review step (also in the summary panel)
   await ravi.getByRole("button", { name: "Confirm booking" }).click();
   await ravi.waitForURL(/\/bookings\/[0-9a-f-]{36}$/);
   const bookingId = ravi.url().split("/").pop()!;
@@ -39,7 +39,12 @@ test("customer self-service: book, assign, repair with an extra charge, pay, rev
   await manager.goto(`/staff/bookings/${bookingId}`);
   await manager.getByRole("button", { name: "Assign technician" }).click();
   await manager.getByRole("radio", { name: /Rahul Sharma/ }).click();
-  await manager.getByRole("dialog").getByRole("button", { name: "Assign", exact: true }).click();
+  // Wait for the server's answer: "Technician assigned" is also a step label in the page's progress tracker,
+  // so waiting for that text alone could read the booking before the assignment is saved.
+  await Promise.all([
+    manager.waitForResponse((r) => r.url().includes(`/bookings/${bookingId}/assign`) && r.ok()),
+    manager.getByRole("dialog").getByRole("button", { name: "Assign", exact: true }).click(),
+  ]);
   await expect(manager.getByText("Technician assigned", { exact: true }).first()).toBeVisible();
 
   const assigned = await (await staffApi.get(`/api/bookings/${bookingId}`)).json();
