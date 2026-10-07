@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarPlus } from "lucide-react";
+import { CalendarDays, CalendarPlus, CircleCheck } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
@@ -9,6 +9,8 @@ import { PaginationBar } from "@/components/common/pagination-bar";
 import { DateRangeFilter } from "@/components/common/date-range-filter";
 import { CustomerFilter, TechnicianFilter } from "@/components/booking/person-filters";
 import { BookingsTable } from "@/components/booking/bookings-table";
+import { CustomerBookings } from "@/components/booking/customer-bookings";
+import { ReassignmentQueue } from "@/components/booking/reassignment-queue";
 import { STATUS_OPTIONS } from "@/components/status-badge";
 import { useBookings } from "@/lib/queries/bookings";
 import { useListParams } from "@/hooks/use-list-params";
@@ -67,9 +69,17 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
         {/* Bookings can be up to a year ahead, so the range may run into the future. */}
         <DateRangeFilter id="bookings" from={from} to={to} futureDays={365} onChange={set} />
         <div className="sm:ml-auto">
-          <Link href={staff ? "/staff/bookings/new" : "/book"} className={buttonVariants()}>
-            <CalendarPlus /> {staff ? "New booking" : "Book a repair"}
-          </Link>
+          {queue ? (
+            bookings.data && bookings.data.total > 0 && (
+              <span className="text-sm font-medium text-destructive">
+                {bookings.data.total} {bookings.data.total === 1 ? "booking" : "bookings"} waiting
+              </span>
+            )
+          ) : (
+            <Link href={staff ? "/staff/bookings/new" : "/book"} className={buttonVariants()}>
+              <CalendarPlus /> {staff ? "New booking" : "Book a repair"}
+            </Link>
+          )}
         </div>
       </div>
 
@@ -89,10 +99,26 @@ export function BookingsList({ staff = false, queue = false }: { staff?: boolean
                   ? "Try another status."
                   : "Your repair bookings will show up here."
           }
+          icon={queue && !filtered ? CircleCheck : CalendarDays}
+          action={
+            !staff &&
+            !filtered &&
+            !status && (
+              <Link href="/book" className={buttonVariants()}>
+                <CalendarPlus /> Book a repair
+              </Link>
+            )
+          }
         />
       ) : (
         <>
-          <BookingsTable items={bookings.data.items} base={base} staff={staff} />
+          {queue ? (
+            <ReassignmentQueue items={bookings.data.items} />
+          ) : staff ? (
+            <BookingsTable items={bookings.data.items} base={base} staff />
+          ) : (
+            <CustomerBookings items={bookings.data.items} />
+          )}
           <PaginationBar {...bookings.data} onPageChange={(p) => set({ page: p })} />
         </>
       )}

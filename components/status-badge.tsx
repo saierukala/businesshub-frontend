@@ -16,6 +16,7 @@ const STATUS: Record<BookingStatus, { label: string; className: string }> = {
 };
 
 export const statusLabel = (s: BookingStatus) => STATUS[s].label;
+export const isBookingStatus = (v: unknown): v is BookingStatus => typeof v === "string" && Object.hasOwn(STATUS, v);
 export const STATUS_OPTIONS = (Object.keys(STATUS) as BookingStatus[]).map((s) => ({ value: s, label: STATUS[s].label }));
 
 export function StatusBadge({ status }: { status: BookingStatus }) {

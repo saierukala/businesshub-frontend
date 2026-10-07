@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Plus } from "lucide-react";
+import { Pencil, Plus, Refrigerator } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { FieldGroup } from "@/components/ui/field";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/common/query-states";
 import { FormDialog } from "@/components/common/form-dialog";
 import { TextField } from "@/components/form/text-field";
 import { FormAlert } from "@/components/form/form-alert";
 import { SubmitButton } from "@/components/form/submit-button";
 import { showApiError } from "@/lib/form";
+import { cn } from "@/lib/utils";
 import { useCategories, useSaveCategory, useSetCategoryActive } from "@/lib/queries/catalog";
 import { categorySchema, type CategoryInput } from "@/lib/schemas/service";
 import type { Category } from "@/lib/types";
@@ -78,49 +78,40 @@ export function ApplianceTypes() {
       ) : categories.isError ? (
         <ErrorState error={categories.error} onRetry={() => categories.refetch()} />
       ) : categories.data.items.length === 0 ? (
-        <EmptyState title="No appliance types yet" description="Add the appliances you repair." action={addButton} />
+        <EmptyState icon={Refrigerator} title="No appliance types yet" description="Add the appliances you repair." action={addButton} />
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Appliance type</TableHead>
-                <TableHead>Offered</TableHead>
-                <TableHead className="w-10">
-                  <span className="sr-only">Rename</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories.data.items.map((c) => (
-                <TableRow key={c.id} className={c.active ? undefined : "text-muted-foreground"}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={c.active}
-                      aria-label={`${c.name} offered`}
-                      disabled={setActive.isPending && setActive.variables?.id === c.id}
-                      onCheckedChange={(active) =>
-                        setActive.mutate(
-                          { id: c.id, active },
-                          {
-                            onSuccess: () => toast.success(active ? `${c.name} repairs are offered again` : `${c.name} repairs stopped for new bookings`),
-                            onError: (err) => toast.error(err.message),
-                          },
-                        )
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon-sm" aria-label={`Rename ${c.name}`} onClick={() => setEditing(c)}>
-                      <Pencil />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {categories.data.items.map((c) => (
+            <li key={c.id} className={cn("flex items-center gap-3 rounded-xl bg-card p-3 ring-1 ring-foreground/10", !c.active && "opacity-70")}>
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <Refrigerator className="size-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{c.name}</div>
+                <div className={cn("text-xs", c.active ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground")}>
+                  {c.active ? "Offered" : "Off for new bookings"}
+                </div>
+              </div>
+              <Switch
+                checked={c.active}
+                aria-label={`${c.name} offered`}
+                disabled={setActive.isPending && setActive.variables?.id === c.id}
+                onCheckedChange={(active) =>
+                  setActive.mutate(
+                    { id: c.id, active },
+                    {
+                      onSuccess: () => toast.success(active ? `${c.name} repairs are offered again` : `${c.name} repairs stopped for new bookings`),
+                      onError: (err) => toast.error(err.message),
+                    },
+                  )
+                }
+              />
+              <Button variant="ghost" size="icon-sm" aria-label={`Rename ${c.name}`} onClick={() => setEditing(c)}>
+                <Pencil />
+              </Button>
+            </li>
+          ))}
+        </ul>
       )}
 
       <FormDialog

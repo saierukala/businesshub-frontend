@@ -62,6 +62,12 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
           <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         </div>
+        {/* With records, "Add" sits in the header; with none, the empty state carries it. */}
+        {records.data && records.data.items.length > 0 && (
+          <Button variant="outline" size="sm" onClick={() => setEditing("new")}>
+            <Plus /> Add {noun}
+          </Button>
+        )}
       </div>
 
       {records.isPending ? (
@@ -117,13 +123,6 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
               </Card>
             );
           })}
-          <button
-            type="button"
-            onClick={() => setEditing("new")}
-            className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/40 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-          >
-            <Plus className="size-4" /> Add {noun}
-          </button>
         </div>
       )}
 
