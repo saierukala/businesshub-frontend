@@ -9,6 +9,10 @@ import { e2eDatabaseUrl } from "./e2e/env";
 type WebServer = Extract<NonNullable<PlaywrightTestConfig["webServer"]>, unknown[]>[number];
 const [api, web] = config.webServer as WebServer[];
 
+// The demo API runs in development mode (not test mode) so events go through the real pg-boss queue, and a worker turns
+// them into in-app notifications: the bell fills up on camera. SMTP_URL is forced empty, so the demo never sends real email (it only logs it).
+const apiEnv = { ...api.env, NODE_ENV: "development", SMTP_URL: "", DATABASE_URL: e2eDatabaseUrl("businesshub_demo_e2e", process.env.DEMO_DATABASE_URL) };
+
 export default defineConfig({
   ...config,
   testDir: "./demo",
@@ -25,7 +29,8 @@ export default defineConfig({
     trace: "off",
   },
   webServer: [
-    { ...api, env: { ...api.env, DATABASE_URL: e2eDatabaseUrl("businesshub_demo_e2e", process.env.DEMO_DATABASE_URL) } },
+    { ...api, env: apiEnv },
+    { command: "npx tsx src/worker.ts", cwd: api.cwd, env: { ...apiEnv, LOG_LEVEL: "info" }, wait: { stdout: /Worker started/ }, timeout: 120_000 },
     web,
   ],
 });

@@ -69,6 +69,11 @@ test("record the demo", async ({ browser }) => {
 
   // ---- 4. Ravi approves the extra charge ----
   await scene(browser, "customer-approves-extra-charge", USERS.ravi, { start: `/bookings/${bookingId}` }, async (ravi) => {
+    // The bell: every step so far reached Ravi as an in-app notification (made by the worker).
+    await ravi.getByRole("button", { name: /^Notifications/ }).click();
+    await settle(ravi, 3500);
+    await ravi.keyboard.press("Escape");
+    await pause(ravi, 1000);
     await show(ravi.getByText("The technician needs your approval"), 2000);
     await ravi.getByRole("button", { name: "Approve" }).click();
     await expect(ravi.getByText("The technician needs your approval")).toBeHidden();
@@ -236,7 +241,72 @@ test("record the demo", async ({ browser }) => {
     await m.getByText(/no longer available|just taken|not available/i).first().waitFor();
     await pause(m, 3500); // the error, and the wizard back on the time step with a fresh list
   });
+
+  // ---- 12-14. Rescheduling and cancelling rules: a customer may move a booking at most 2 times; staff may make an
+  // exception, but only with a reason (saved in the audit log); cancelling more than 4 hours ahead is free. ----
+  // Off camera: Ravi books another visit at 3:00 pm and moves it once (3:30 pm), so clip 12 starts at his 2nd move.
+  const raviApi = await loginApi(USERS.ravi);
+  const firstBooking = await (await raviApi.get(`/api/bookings/${bookingId}`)).json();
+  const created = await raviApi.post("/api/bookings", {
+    data: {
+      applianceId: firstBooking.appliance.id,
+      serviceId: firstBooking.service.id,
+      addressId: firstBooking.address.id,
+      problemDescription: "Drum makes a loud noise while spinning.",
+      startAt: istAt("15:00"),
+    },
+  });
+  expect(created.status(), await created.text()).toBe(201);
+  const laterId = (await created.json()).id as string;
+  const movedOnce = await raviApi.post(`/api/bookings/${laterId}/reschedule`, { data: { startAt: istAt("15:30") } });
+  expect(movedOnce.ok(), await movedOnce.text()).toBeTruthy();
+
+  await scene(browser, "customer-reschedule-limit", USERS.ravi, { start: `/bookings/${laterId}` }, async (ravi) => {
+    await reschedule(ravi, "4:00 pm"); // his 2nd move: allowed
+    await ravi.getByText("Booking rescheduled").waitFor();
+    await settle(ravi, 2000);
+    await reschedule(ravi, "4:30 pm"); // a 3rd move: refused
+    await show(ravi.getByRole("dialog").getByText(/already rescheduled 2 times/), 3500);
+    await ravi.getByRole("dialog").getByRole("button", { name: "Close" }).first().click(); // the text button, not the X
+    await pause(ravi);
+  });
+
+  await scene(browser, "staff-override-with-reason", USERS.manager, { start: `/staff/bookings/${laterId}` }, async (m) => {
+    await reschedule(m, "5:00 pm");
+    const dialog = m.getByRole("dialog");
+    await show(dialog.getByLabel("Reason for the exception"), 2500); // staff may go past the limit, with a reason
+    await type(dialog.getByLabel("Reason for the exception"), "Customer called: he is travelling at 4 pm");
+    await pause(m, 800);
+    await dialog.getByRole("button", { name: "Move booking" }).click();
+    await m.getByText("Booking rescheduled").waitFor();
+    await settle(m, 2000);
+    await show(m.getByText("History", { exact: true }), 3000);
+  });
+
+  await scene(browser, "customer-cancels", USERS.ravi, { start: `/bookings/${laterId}` }, async (ravi) => {
+    await ravi.getByRole("button", { name: "Cancel booking" }).click();
+    await settle(ravi, 1000);
+    const dialog = ravi.getByRole("dialog");
+    await type(dialog.getByLabel("Reason (optional)"), "Plans changed, I will book again later");
+    await pause(ravi, 800);
+    await dialog.getByRole("button", { name: "Cancel booking" }).click();
+    await ravi.getByText("Cancelled", { exact: true }).first().waitFor();
+    await settle(ravi, 2000);
+    await show(ravi.getByText("History", { exact: true }), 3000);
+  });
 });
+
+// Open "Reschedule" on a booking page, pick a new time on the visit day, press "Move booking".
+async function reschedule(page: Page, time: string) {
+  await page.getByRole("button", { name: "Reschedule" }).click();
+  await settle(page, 1000);
+  await pickSlot(page, time);
+  await page.getByRole("dialog").getByRole("button", { name: "Move booking" }).click();
+  await pause(page, 1500); // not settle: the "Booking rescheduled" toast should still be on screen afterwards
+}
+
+// An ISO time on the visit day, given as India time ("15:00").
+const istAt = (time: string) => new Date(`${visitDay().iso}T${time}:00+05:30`).toISOString();
 
 const next = async (page: Page) => {
   await page.getByRole("button", { name: "Continue" }).click();
@@ -299,7 +369,7 @@ async function takeRahulAt(staffApi: Awaited<ReturnType<typeof loginApi>>, time:
       serviceId: services.find((s) => s.name === "Washing Machine Repair")!.id,
       addressId: other.addressId,
       problemDescription: "Booked by phone a moment earlier",
-      startAt: new Date(`${visitDay().iso}T${time}:00+05:30`).toISOString(),
+      startAt: istAt(time),
       source: "PHONE",
       technicianId: techs.find((t) => t.name === "Rahul Sharma")!.id,
     },
