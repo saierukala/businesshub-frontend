@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { BadgeCheck, Banknote, ReceiptText, Smartphone } from "lucide-react";
+import { Banknote, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useRecordPayment } from "@/lib/queries/payments";
 import { PayOnlineButton } from "./pay-online-button";
-import { formatDate, formatINR, formatTime } from "@/lib/format";
+import { PaidCard } from "./paid-card";
+import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { BookingDetail } from "@/lib/types";
 
@@ -19,8 +19,6 @@ const METHODS = [
   { value: "UPI", label: "UPI", icon: Smartphone },
 ] as const;
 
-// "Paid ₹499 in cash / by UPI / by card / online"
-const METHOD_PHRASE = { CASH: "in cash", UPI: "by UPI", CARD: "by card", ONLINE: "online" };
 
 type Props = {
   booking: BookingDetail;
@@ -41,28 +39,10 @@ export function PaymentSection({ booking, receiptHref, canRecord, canPayOnline =
   const due = formatINR(booking.visit?.finalAmount ?? booking.service.basePrice);
 
   if (booking.payment) {
-    const p = booking.payment;
     return (
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Payment</h2>
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4">
-          <div className="flex items-center gap-3">
-            <BadgeCheck className="size-6 text-green-600" />
-            <div>
-              <div className="font-semibold">
-                Paid {formatINR(p.amount)} {METHOD_PHRASE[p.method]}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {p.paidAt && `${formatDate(p.paidAt)}, ${formatTime(p.paidAt)}`}
-                {p.reference && ` · Ref ${p.reference}`}
-                {p.method === "ONLINE" ? " · via Razorpay" : p.recordedBy && ` · Recorded by ${p.recordedBy}`}
-              </div>
-            </div>
-          </div>
-          <Link href={receiptHref} className={buttonVariants({ variant: "outline", size: "lg" })}>
-            <ReceiptText /> View receipt {p.receiptNumber && `(${p.receiptNumber})`}
-          </Link>
-        </div>
+        <PaidCard payment={booking.payment} receiptHref={receiptHref} />
       </section>
     );
   }

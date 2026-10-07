@@ -55,7 +55,11 @@ describe("PaymentSection", () => {
   it("once paid, shows the payment and a receipt link instead of the form", () => {
     const paid = { amount: "749.00", method: "CASH", status: "PAID", reference: null, receiptNumber: "RC-2026-00001", paidAt: null, recordedBy: "Rahul" };
     setup({ ...base, payment: paid } as unknown as BookingDetail, true);
-    expect(screen.getByText(/Paid ₹749 in cash/)).toBeInTheDocument();
+    expect(screen.getByText("Payment complete")).toBeInTheDocument();
+    expect(screen.getByText("₹749")).toBeInTheDocument();
+    expect(screen.getByText("Paid in cash")).toBeInTheDocument();
+    expect(screen.getByText("RC-2026-00001")).toBeInTheDocument();
+    expect(screen.getByText("Recorded by Rahul")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /View receipt/ })).toHaveAttribute("href", "/tech/jobs/b1/receipt");
     expect(screen.queryByRole("button", { name: "Payment received" })).not.toBeInTheDocument();
   });
