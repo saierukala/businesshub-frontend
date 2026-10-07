@@ -16,7 +16,6 @@ type CheckoutOptions = {
   image?: string; // logo, absolute URL
   prefill?: { name?: string; email?: string; contact?: string };
   theme?: { color?: string; backdrop_color?: string };
-  config?: { display: { blocks: Record<string, { name: string; instruments: { method: string }[] }>; sequence: string[]; preferences: { show_default_blocks: boolean } } };
   handler: (result: CheckoutResult) => void;
   modal?: { ondismiss?: () => void };
 };
