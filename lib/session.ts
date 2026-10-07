@@ -6,19 +6,25 @@ import { homeFor, type Role, type User } from "@/lib/auth";
 
 const backendUrl = process.env.BACKEND_URL ?? "http://localhost:4000";
 
+// The backend is down (or broken), so we cannot tell who is logged in. Thrown, not treated as "logged out",
+// so app/error.tsx shows "Can't reach the server" instead of sending a logged-in person to /login.
+const unreachable = () => new Error("The server is not reachable right now.");
+
 export async function getCurrentUser(): Promise<User | null> {
   const session = (await cookies()).get("bh_session");
   if (!session) return null;
+  let res: Response;
   try {
-    const res = await fetch(`${backendUrl}/auth/me`, {
+    res = await fetch(`${backendUrl}/auth/me`, {
       headers: { Cookie: `bh_session=${session.value}` },
       cache: "no-store", // per-user data: never cache
     });
-    if (!res.ok) return null;
-    return ((await res.json()) as { user: User }).user;
   } catch {
-    return null; // backend down: treat as logged out
+    throw unreachable(); // nothing is listening
   }
+  if (res.status >= 500) throw unreachable();
+  if (!res.ok) return null; // 401: the session expired or is invalid, so log in again
+  return ((await res.json()) as { user: User }).user;
 }
 
 // Layout guard. This is UX only: the backend checks role and ownership on every request.

@@ -5,7 +5,7 @@ API contract: `../BusinessHub-backend/docs/api/auth.md`.
 ## How the session works
 - The backend sets an httpOnly cookie `bh_session`. JS never reads it.
 - The browser calls `/api/*`; `next.config.ts` rewrites it to `BACKEND_URL`, so the cookie is same-origin.
-- Server layouts call `getCurrentUser()` (`lib/session.ts`), which forwards the cookie to `GET /auth/me`.
+- Server layouts call `getCurrentUser()` (`lib/session.ts`), which forwards the cookie to `GET /auth/me`. A 401 means logged out (go to /login); if the API is down or answers 5xx it throws instead, and `app/error.tsx` shows "Can't reach the server" (it checks `/api/health` itself, because Next hides server error messages in production).
   After login/logout/verify, client code calls `router.refresh()` so layouts re-run with the new session.
 - Guards are UX only. The backend checks role and ownership on every request.
 
