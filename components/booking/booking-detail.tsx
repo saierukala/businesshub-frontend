@@ -175,7 +175,7 @@ export function BookingDetail({ id, staff = false }: { id: string; staff?: boole
       </Card>
 
       {b.visit && <VisitSummary visit={b.visit} />}
-      <PaymentSection booking={b} canRecord={staff} receiptHref={`${staff ? "/staff/bookings" : "/bookings"}/${b.id}/receipt`} />
+      <PaymentSection booking={b} canRecord={staff} canPayOnline={!staff} receiptHref={`${staff ? "/staff/bookings" : "/bookings"}/${b.id}/receipt`} />
       <ReviewSection booking={b} canReview={!staff} />
 
       <BookingHistory history={b.history} />

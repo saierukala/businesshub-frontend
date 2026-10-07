@@ -9,6 +9,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useRecordPayment } from "@/lib/queries/payments";
+import { PayOnlineButton } from "./pay-online-button";
 import { formatDate, formatINR, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { BookingDetail } from "@/lib/types";
@@ -24,11 +25,12 @@ type Props = {
   booking: BookingDetail;
   receiptHref: string; // where this person opens the receipt
   canRecord: boolean; // the technician of the job and managers; customers only see the state
+  canPayOnline?: boolean; // the customer: "Pay online" (Razorpay, when it is set up)
 };
 
 // Payment for a completed visit. The amount shown comes from the API (price + approved extra charge); we only
 // record HOW it was paid. Once paid it shows the receipt link.
-export function PaymentSection({ booking, receiptHref, canRecord }: Props) {
+export function PaymentSection({ booking, receiptHref, canRecord, canPayOnline = false }: Props) {
   const record = useRecordPayment(booking.id);
   const [method, setMethod] = useState<"CASH" | "UPI">("CASH");
   const [reference, setReference] = useState("");
@@ -71,6 +73,7 @@ export function PaymentSection({ booking, receiptHref, canRecord }: Props) {
         <p className="rounded-lg border p-4">
           <span className="font-semibold">{due} to pay.</span> You can pay the technician in cash or by UPI. A receipt appears here once it is recorded.
         </p>
+        {canPayOnline && <PayOnlineButton bookingId={booking.id} amountLabel={due} />}
       </section>
     );
   }
