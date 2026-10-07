@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "demo": "playwright test -c playwright.demo.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

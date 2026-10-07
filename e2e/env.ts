@@ -9,14 +9,15 @@ export const WEB_PORT = 3100;
 export const WEB_URL = `http://localhost:${WEB_PORT}`;
 
 // The E2E run uses its OWN database, which is wiped and re-seeded before every run. Never the dev database.
-// E2E_DATABASE_URL wins; otherwise take the backend's DATABASE_URL and swap the database name for "businesshub_e2e".
-export function e2eDatabaseUrl(): string {
-  let url = process.env.E2E_DATABASE_URL;
+// `override` (E2E_DATABASE_URL) wins; otherwise take the backend's DATABASE_URL and swap the database name for `name`.
+// The demo recorder passes its own name and override, so it never shares the tests' database.
+export function e2eDatabaseUrl(name = "businesshub_e2e", override = process.env.E2E_DATABASE_URL): string {
+  let url = override;
   if (!url) {
     const envFile = resolve(BACKEND_DIR, ".env");
     const dev = existsSync(envFile) ? readFileSync(envFile, "utf8").match(/^DATABASE_URL="?([^"\r\n]+)"?/m)?.[1] : undefined;
     if (!dev) throw new Error("Set E2E_DATABASE_URL (a Postgres database whose name contains 'e2e').");
-    url = dev.replace(/\/[^/?]+(\?|$)/, "/businesshub_e2e$1");
+    url = dev.replace(/\/[^/?]+(\?|$)/, `/${name}$1`);
   }
   const dbName = new URL(url).pathname.slice(1);
   if (!dbName.includes("e2e")) throw new Error(`Refusing to wipe database "${dbName}": the E2E database name must contain "e2e".`);
