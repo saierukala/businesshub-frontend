@@ -1,6 +1,7 @@
 "use client";
 
 import { RecordsSection } from "./records-section";
+import { MapPinned } from "lucide-react";
 import { addressIcon } from "@/lib/record-icons";
 import { AddressForm } from "./address-form";
 
@@ -11,6 +12,7 @@ export function AddressSection({ customerId }: { customerId?: string }) {
       kind="addresses"
       customerId={customerId}
       title="Addresses"
+      icon={MapPinned}
       description="Where the technician comes for a repair."
       noun="address"
       emptyTitle="No addresses yet"

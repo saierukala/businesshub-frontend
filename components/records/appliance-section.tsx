@@ -2,6 +2,7 @@
 
 import { RecordsSection } from "./records-section";
 import { ApplianceForm } from "./appliance-form";
+import { Plug } from "lucide-react";
 import { applianceIcon } from "@/lib/record-icons";
 
 // customerId omitted = the logged-in customer's own appliances.
@@ -11,6 +12,7 @@ export function ApplianceSection({ customerId }: { customerId?: string }) {
       kind="appliances"
       customerId={customerId}
       title="Appliances"
+      icon={Plug}
       description="Saved here, they are one tap away when you book. Each keeps its repair history."
       noun="appliance"
       emptyTitle="No appliances yet"

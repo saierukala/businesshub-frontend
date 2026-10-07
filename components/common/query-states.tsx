@@ -34,12 +34,13 @@ export function ErrorState({ error, onRetry }: { error: Error; onRetry: () => vo
   );
 }
 
-export function EmptyState({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
+// icon: defaults to an inbox; pass a picture of what is missing (a map pin for addresses...).
+export function EmptyState({ title, description, action, icon: Icon = Inbox }: { title: string; description?: string; action?: React.ReactNode; icon?: React.ComponentType }) {
   return (
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <Inbox />
+          <Icon />
         </EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
         {description && <EmptyDescription>{description}</EmptyDescription>}

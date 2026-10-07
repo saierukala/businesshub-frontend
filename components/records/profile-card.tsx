@@ -1,52 +1,54 @@
-import { BadgeCheck, CircleAlert, Mail, Phone } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatPhone } from "@/lib/format";
+import Link from "next/link";
+import { BadgeCheck, CircleAlert, ClipboardList, Mail, Phone, Settings } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { formatPhone, initials } from "@/lib/format";
 import type { User } from "@/lib/auth";
 
-// "Ravi Kumar" -> "RK"
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
-
-// Who is logged in, at the top of My account. Read-only (changing name or email is not in v1).
+// Who is logged in, at the top of My account. Read-only (changing name or email is not in v1);
+// password and appearance live in Settings.
 export function ProfileCard({ user }: { user: User }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-sidebar-primary text-lg font-semibold text-sidebar-primary-foreground">
-          {initials(user.name)}
-        </span>
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <h2 className="text-lg font-semibold">{user.name}</h2>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
-            {user.email && (
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Mail className="size-4 shrink-0" />
-                <span className="truncate">{user.email}</span>
-                {user.emailVerified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-500/20 dark:text-green-300">
-                    <BadgeCheck className="size-3.5" /> Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
-                    <CircleAlert className="size-3.5" /> Not verified
-                  </span>
-                )}
-              </span>
-            )}
-            {user.phone && (
-              <span className="flex items-center gap-1.5">
-                <Phone className="size-4" />
-                {formatPhone(user.phone)}
-              </span>
-            )}
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <div className="h-20 bg-gradient-to-br from-sidebar-primary/25 via-sidebar-primary/10 to-transparent sm:h-24" aria-hidden />
+      <div className="flex flex-col gap-4 px-4 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+        <div className="-mt-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+          <span className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-sidebar-primary text-2xl font-semibold text-sidebar-primary-foreground ring-4 ring-card">
+            {initials(user.name)}
+          </span>
+          <div className="flex min-w-0 flex-col gap-1.5 sm:pb-1">
+            <h2 className="text-xl font-semibold tracking-tight">{user.name}</h2>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              {user.email && (
+                <span className="inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-1">
+                  <Mail className="size-3.5 shrink-0" />
+                  <span className="truncate">{user.email}</span>
+                  {user.emailVerified ? (
+                    <BadgeCheck className="size-4 shrink-0 text-green-600 dark:text-green-400" aria-label="Verified" />
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                      <CircleAlert className="size-3.5" /> Not verified
+                    </span>
+                  )}
+                </span>
+              )}
+              {user.phone && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1">
+                  <Phone className="size-3.5" />
+                  {formatPhone(user.phone)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex gap-2">
+          <Link href="/bookings" className={buttonVariants({ variant: "outline", className: "flex-1 sm:flex-none" })}>
+            <ClipboardList /> My bookings
+          </Link>
+          <Link href="/settings" className={buttonVariants({ variant: "outline", className: "flex-1 sm:flex-none" })}>
+            <Settings /> Settings
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }

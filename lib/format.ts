@@ -55,6 +55,30 @@ export function formatSlot(startIso: string, endIso: string): string {
   return `${formatWeekdayDate(startIso)}, ${formatTime(startIso)} – ${formatTime(endIso)}`;
 }
 
+// "Ravi Kumar" -> "RK", for a round name badge.
+export function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+}
+
+const partsFmt = new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short" });
+
+// { weekday: "Mon", day: "5", month: "Oct" } in IST, for a calendar-style date block.
+export function dateParts(iso: string): { weekday: string; day: string; month: string } {
+  const parts = Object.fromEntries(partsFmt.formatToParts(new Date(iso)).map((p) => [p.type, p.value]));
+  return { weekday: parts.weekday, day: parts.day, month: parts.month };
+}
+
+// "Good morning" / "Good afternoon" / "Good evening" by the hour in IST (not the browser's clock).
+export function greeting(date: Date = new Date()): string {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "numeric", hourCycle: "h23" }).format(date));
+  return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+}
+
 // The IST calendar day of an instant, as YYYY-MM-DD. Used for the date picker (never the browser's day).
 export function istDay(date: Date = new Date()): string {
   return isoDayFmt.format(date);

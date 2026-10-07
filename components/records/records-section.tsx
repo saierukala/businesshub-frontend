@@ -25,6 +25,7 @@ type Props<K extends Kind> = {
   kind: K;
   customerId?: string; // undefined = the logged-in customer
   title: string;
+  icon: LucideIcon; // shown beside the section title
   description: string; // one line under the section title
   noun: string; // "address" / "appliance"
   emptyTitle: string;
@@ -36,7 +37,7 @@ type Props<K extends Kind> = {
 // List + add + edit + delete for a customer's addresses or appliances.
 // Used on the customer's own account page and on the staff customer page.
 export function RecordsSection<K extends Kind>(props: Props<K>) {
-  const { kind, customerId, title, description, noun, emptyTitle, emptyDescription, describe, renderForm } = props;
+  const { kind, customerId, title, icon: SectionIcon, description, noun, emptyTitle, emptyDescription, describe, renderForm } = props;
   const records = useCustomerRecords(kind, customerId);
   const remove = useDeleteCustomerRecord(kind, customerId);
   const [editing, setEditing] = useState<Item<K> | "new" | null>(null);
@@ -44,16 +45,14 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
   const [historyOf, setHistoryOf] = useState<Item<K> | null>(null); // appliances only
   const staff = customerId !== undefined;
 
-  const addButton = (
-    <Button variant="outline" size="sm" onClick={() => setEditing("new")}>
-      <Plus /> Add {noun}
-    </Button>
-  );
-
   return (
-    <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+    <section className="flex flex-col gap-4 rounded-xl border bg-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sidebar-primary/10 text-sidebar-primary" aria-hidden>
+            <SectionIcon className="size-5" />
+          </span>
+          <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             {title}
             {records.data && records.data.total > 0 && (
@@ -61,8 +60,8 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
             )}
           </h2>
           <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
         </div>
-        {records.data && records.data.items.length > 0 && addButton}
       </div>
 
       {records.isPending ? (
@@ -70,15 +69,24 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
       ) : records.isError ? (
         <ErrorState error={records.error} onRetry={() => records.refetch()} />
       ) : records.data.items.length === 0 ? (
-        <EmptyState title={emptyTitle} description={emptyDescription} action={addButton} />
+        <EmptyState
+          icon={SectionIcon}
+          title={emptyTitle}
+          description={emptyDescription}
+          action={
+            <Button onClick={() => setEditing("new")}>
+              <Plus /> Add {noun}
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {(records.data.items as Item<K>[]).map((item) => {
             const d = describe(item);
             return (
-              <Card key={item.id} size="sm">
+              <Card key={item.id} size="sm" className="transition-shadow hover:shadow-md hover:ring-foreground/20">
                 <CardContent className="flex items-start gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground" aria-hidden>
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground/70" aria-hidden>
                     <d.icon className="size-5" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -109,6 +117,13 @@ export function RecordsSection<K extends Kind>(props: Props<K>) {
               </Card>
             );
           })}
+          <button
+            type="button"
+            onClick={() => setEditing("new")}
+            className="flex min-h-20 items-center justify-center gap-2 rounded-xl border border-dashed text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/40 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <Plus className="size-4" /> Add {noun}
+          </button>
         </div>
       )}
 
