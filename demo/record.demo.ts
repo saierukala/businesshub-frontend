@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { USERS, createCustomer, loginApi, visitDay } from "../e2e/helpers";
-import { keep, pause, scene, scrollBy, settle, show, type } from "./scene";
+import { pause, scene, scrollBy, settle, show, type } from "./scene";
 
 // Not a test: records the LinkedIn demo, one clip per part, in story order (see docs/DEMO.md).
 //   npm run demo
@@ -94,7 +94,7 @@ test("record the demo", async ({ browser }) => {
     await expect(ravi.getByRole("heading", { name: "Pay for your repair" })).toBeVisible();
     await pause(ravi, 2500);
     await ravi.getByRole("button", { name: /Pay ₹799 securely/ }).click();
-    await payWithTestNetbanking(ravi, "06b");
+    await payWithTestNetbanking(ravi);
     await expect(ravi.getByRole("heading", { name: "Payment successful" })).toBeVisible({ timeout: 60_000 });
     await pause(ravi, 3000);
     await ravi.getByRole("link", { name: "View receipt" }).click();
@@ -255,8 +255,8 @@ async function pickSlot(page: Page, time: string) {
 
 // Razorpay's test checkout (an iframe from api.razorpay.com). The test account offers Cards, Netbanking and Wallet
 // (no UPI on desktop), so: Netbanking → a bank → Razorpay's mock bank window → "Success". No card numbers needed.
-// The mock bank window is a popup; it is saved as its own clip (NN-razorpay-bank-window.webm).
-async function payWithTestNetbanking(page: Page, clipPrefix: string) {
+// The mock bank window is a popup that is not part of the clip: clip 06 shows Razorpay processing and then success.
+async function payWithTestNetbanking(page: Page) {
   const frame = page.locator("iframe.razorpay-checkout-frame").contentFrame();
   try {
     await frame.getByText("Netbanking", { exact: true }).first().click({ timeout: 30_000 });
@@ -271,7 +271,6 @@ async function payWithTestNetbanking(page: Page, clipPrefix: string) {
     await bank.waitForTimeout(2000);
     await bank.getByRole("button", { name: /^success$/i }).or(bank.getByText(/^success$/i)).first().click();
     if (!bank.isClosed()) await bank.waitForEvent("close", { timeout: 20_000 }).catch(() => bank.close());
-    if (keep("06")) await bank.video()?.saveAs(`demo-videos/${clipPrefix}-razorpay-bank-window.webm`);
   } catch (err) {
     await page.screenshot({ path: "test-results/razorpay-at-failure.png" }).catch(() => {});
     throw err;

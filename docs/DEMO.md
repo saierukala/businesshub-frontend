@@ -28,7 +28,6 @@ npm run demo
 | 04-customer-approves-extra-charge | Ravi approves the extra charge |
 | 05-technician-completes-visit | Rahul completes the visit (₹799 due) |
 | 06-customer-pays-online | Checkout page, Razorpay test payment, "Payment successful", receipt |
-| 06b-razorpay-bank-window | Razorpay's test bank page (the "Success" click), a separate window |
 | 07-customer-reviews | Ravi gives 5 stars |
 | 08-owner-dashboard-reports-audit | Dashboard with revenue, reports, audit log |
 | 09-phone-booking-for-priya | Staff books for a phone-only customer |
@@ -41,5 +40,5 @@ test Netbanking (Canara Bank → Success). No real money moves.
 ## Stitching (Windows Clipchamp)
 
 1. Open Clipchamp → Create a new video → drag in the clips in number order.
-2. Put `06b` right after the moment the Razorpay window opens in `06` (or skip it; `06` alone still shows the flow).
+2. `06` shows the whole payment: checkout, the Razorpay window, processing, success, receipt.
 3. Add a short text caption at the start of each clip (Text → Plain), export at 1080p.
