@@ -6,9 +6,9 @@ I designed and built all three parts myself: this **Next.js web app**, a **Node.
 **React Native mobile app**.
 
 ## Demo video
-[![Watch the demo video](docs/screenshots/staff-dashboard.png)](docs/demo/HomeFix-demo.mp4)
+[![Watch the demo video](docs/screenshots/staff-dashboard.png)](https://drive.google.com/file/d/1l30L5yxm4BNmt8Jmm4eeJWW5m8gabDfW/view?usp=drivesdk)
 
-**[▶ Watch the full demo (MP4)](docs/demo/HomeFix-demo.mp4)**: a customer books a repair, a manager assigns a technician,
+**[▶ Watch the full demo (Google Drive)](https://drive.google.com/file/d/1l30L5yxm4BNmt8Jmm4eeJWW5m8gabDfW/view?usp=drivesdk)**: a customer books a repair, a manager assigns a technician,
 the technician does the job, the customer approves an extra charge and pays online, and the owner reviews reports and the audit log.
 
 ## Highlights
