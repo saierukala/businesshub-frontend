@@ -1,13 +1,43 @@
-# BusinessHub (frontend)
+# BusinessHub: appliance repair booking and field service
 
-Next.js UI for **HomeFix Appliance Services** (Hyderabad): appliance repair booking and field service. Three experiences
-in one app: **customers** book and follow their repairs, **staff** (Owner and Manager) run the day, and **technicians**
-work their jobs from a phone.
+A full-stack booking and field-service platform for **HomeFix Appliance Services** (Hyderabad). Customers book repairs
+online, staff (Owner and Manager) take phone bookings and run the day, and technicians work their jobs from a phone.
+I designed and built all three parts myself: this **Next.js web app**, a **Node.js/PostgreSQL API**, and a
+**React Native mobile app**.
 
-**Live demo:** _add the Vercel URL here after deploying_ · **Backend repo and API docs:** https://github.com/saierukala/businesshub-backend
+## Demo video
+[![Watch the demo video](docs/screenshots/staff-dashboard.png)](docs/demo/HomeFix-demo.mp4)
 
-The backend is the source of truth. This app only shows what the API returns and sends requests: it never decides
-availability, prices or which status changes are allowed.
+**[▶ Watch the full demo (MP4)](docs/demo/HomeFix-demo.mp4)**: a customer books a repair, a manager assigns a technician,
+the technician does the job, the customer approves an extra charge and pays online, and the owner reviews reports and the audit log.
+
+## Highlights
+- **No double booking, even with two requests at the same moment.** A PostgreSQL exclusion constraint (`btree_gist`) on
+  each technician's time range, checked inside a transaction. A clash returns `409` and never reaches the database.
+- **Availability engine:** free slots come from technician skills, service areas, working hours, time off and existing
+  jobs. All business time runs in `Asia/Kolkata` on the server; times are stored in UTC.
+- **One booking path for everyone:** customers and staff use the same create, reschedule and cancel services. Staff can
+  override the cutoff and cancellation windows only, and must give a reason, which goes into the audit log.
+- **Booking status rules:** only allowed status changes are accepted. Each change is recorded in the status history and the audit log.
+- **Payments:** Razorpay (test mode). The server creates the order and sets the amount, checks the payment signature,
+  and accepts a signed webhook as a backup.
+- **Security:** bcrypt passwords, JWT in httpOnly cookies (Bearer tokens for mobile), role and ownership checks on every
+  endpoint, and Zod validation on every request.
+- **Background jobs:** email and in-app notifications through a pg-boss worker (a PostgreSQL job queue, no Redis).
+- **Tested:** Vitest + Supertest API tests, Vitest + Testing Library UI tests, and Playwright end-to-end tests of both
+  booking paths against a real API and database. CI runs on GitHub Actions.
+
+## Tech stack
+| Part | Stack |
+| --- | --- |
+| Web (this repo) | Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, shadcn/ui, TanStack Query, React Hook Form, Zod |
+| API (private repo) | Node.js, Express, TypeScript, PostgreSQL, Prisma, Zod, pg-boss, Nodemailer, pino, OpenAPI/Swagger |
+| Mobile (separate repo) | React Native, Expo |
+| Testing | Vitest, Supertest, Testing Library, Playwright, GitHub Actions |
+
+The backend source is in a private repository. I can share it or walk through it on request.
+
+## Screenshots
 
 | Staff dashboard | Customer home | Booking wizard |
 | --- | --- | --- |
@@ -23,10 +53,8 @@ availability, prices or which status changes are allowed.
 - **Technician (mobile first):** today's jobs, big one-hand buttons (on my way, arrived, start), visit notes, extra charge proposal, payment, receipt.
 - Notification bell, loading / empty / error states on every data screen, light and dark mode.
 
-Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, shadcn/ui, TanStack Query, React Hook Form + Zod, Vitest + Testing Library, Playwright.
-
 ## Run it locally
-You need the backend running first (see its README): API on port 4000, seeded.
+The app needs the API (private repo) running on port 4000 with seed data.
 
 ```bash
 npm install
@@ -62,10 +90,10 @@ and the reset refuses any database whose name does not contain "e2e". `E2E_VIDEO
 `SCREENSHOTS=1 npx playwright test e2e/customer-path.e2e.ts e2e/screenshots.e2e.ts` retakes the README screenshots.
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit tests and the build, then the two E2E tests with a PostgreSQL service
-(it checks out the backend repo; if that repo is private add a read-only token as the secret `BACKEND_REPO_TOKEN`).
+(it checks out the private backend repo with a read-only token in the secret `BACKEND_REPO_TOKEN`).
 
 ## Deploying
-See the backend repo's `docs/DEPLOY.md`. On Vercel the only setting is `BACKEND_URL` (the API's public URL).
+On Vercel the only setting is `BACKEND_URL` (the API's public URL).
 
 ## More
 Short notes per feature are in `docs/` (bookings, visits, payments, notifications, dashboards and reports, reviews, audit and hardening).
