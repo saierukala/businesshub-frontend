@@ -94,11 +94,12 @@ test("customer self-service: book, assign, repair with an extra charge, pay, rev
   await expect(rahul.getByText("₹799")).toBeVisible(); // the amount to collect comes from the server
   await rahul.getByRole("radio", { name: "Cash" }).click();
   await rahul.getByRole("button", { name: "Payment received" }).click();
-  await expect(rahul.getByText(/Paid ₹799 by cash/)).toBeVisible();
+  await expect(rahul.getByText("Paid in cash")).toBeVisible();
 
   // ---- 7. Ravi sees the receipt and rates the repair ----
   await ravi.reload();
-  await expect(ravi.getByText(/Paid ₹799 by cash/)).toBeVisible();
+  await expect(ravi.getByText("Paid in cash")).toBeVisible();
+  await expect(ravi.getByText("₹799").first()).toBeVisible();
   await expect(ravi.getByRole("link", { name: /View receipt/ })).toBeVisible();
   await ravi.getByRole("radio", { name: /5 stars/ }).click();
   await ravi.getByLabel("Comment (optional)").fill("Quick and tidy work");
