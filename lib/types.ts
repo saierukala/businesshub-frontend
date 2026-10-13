@@ -1,5 +1,5 @@
 // Shapes returned by the API (see ../BusinessHub-backend/docs/api/*.md).
-import type { Role } from "@/lib/auth";
+import type { Role, User } from "@/lib/auth";
 
 export type Page<T> = { items: T[]; page: number; pageSize: number; total: number; totalPages: number };
 
@@ -170,3 +170,6 @@ export type BookingDetail = Booking & {
 // One bookable start time. Staff also get who is free.
 export type SlotOption = { startAt: string; endAt: string; technicians?: { id: string; name: string }[] };
 export type Availability = { date: string; timezone: string; durationMinutes: number; slots: SlotOption[] };
+
+// GET /profile: the logged-in user plus when they joined and their photo (a data URL, or null).
+export type Profile = User & { memberSince: string; avatar: string | null };

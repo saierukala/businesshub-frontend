@@ -1,20 +1,19 @@
 import Link from "next/link";
 import { BadgeCheck, CircleAlert, ClipboardList, Mail, Phone, Settings } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { formatPhone, initials } from "@/lib/format";
+import { MyAvatar } from "@/components/profile/profile-photo";
+import { formatPhone } from "@/lib/format";
 import type { User } from "@/lib/auth";
 
-// Who is logged in, at the top of My account. Read-only (changing name or email is not in v1);
-// password and appearance live in Settings.
+// Who is logged in, at the top of My account. Name, phone and photo are edited in the Profile card below it;
+// appearance lives in Settings.
 export function ProfileCard({ user }: { user: User }) {
   return (
     <section className="overflow-hidden rounded-xl border bg-card">
       <div className="h-20 bg-gradient-to-br from-sidebar-primary/25 via-sidebar-primary/10 to-transparent sm:h-24" aria-hidden />
       <div className="flex flex-col gap-4 px-4 pb-5 sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <div className="-mt-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
-          <span className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-sidebar-primary text-2xl font-semibold text-sidebar-primary-foreground ring-4 ring-card">
-            {initials(user.name)}
-          </span>
+          <MyAvatar name={user.name} className="size-20 rounded-2xl text-2xl ring-4 ring-card" />
           <div className="flex min-w-0 flex-col gap-1.5 sm:pb-1">
             <h2 className="text-xl font-semibold tracking-tight">{user.name}</h2>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

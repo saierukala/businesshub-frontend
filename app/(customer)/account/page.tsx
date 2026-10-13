@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { AddressSection } from "@/components/records/address-section";
 import { ApplianceSection } from "@/components/records/appliance-section";
 import { ProfileCard } from "@/components/records/profile-card";
+import { ProfileForm } from "@/components/profile/profile-form";
 import { requireUser } from "@/lib/session";
 
 export const metadata = { title: "My account" };
@@ -13,6 +14,7 @@ export default async function AccountPage() {
     <>
       <PageHeader title="My account" description="Your details, where we visit and what we repair." />
       <ProfileCard user={user} />
+      <ProfileForm user={user} />
       <AddressSection />
       <ApplianceSection />
     </>

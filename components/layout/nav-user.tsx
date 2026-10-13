@@ -6,7 +6,8 @@ import { ChevronsUpDown, LogOut, Settings, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import type { Role, User } from "@/lib/auth";
 import { useLogout } from "@/lib/queries/auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useProfile } from "@/lib/queries/profile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,9 +45,11 @@ function initials(name: string) {
 }
 
 function UserLine({ user }: { user: User }) {
+  const { data: profile } = useProfile();
   return (
     <>
       <Avatar className="size-8 rounded-lg">
+        {profile?.avatar && <AvatarImage src={profile.avatar} alt="" className="rounded-lg object-cover" />}
         <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">{initials(user.name)}</AvatarFallback>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
